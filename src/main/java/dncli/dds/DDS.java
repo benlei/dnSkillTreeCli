@@ -21,14 +21,17 @@ public class DDS {
     static {
         options.addOption(Option.builder()
                 .longOpt("png")
-                .hasArg()
                 .desc("Converts DDS file to a PNG file.")
                 .build());
 
         options.addOption(Option.builder()
                 .longOpt("jpg")
-                .hasArg()
                 .desc("Converts DDS file to a JPG file.")
+                .build());
+
+        options.addOption(Option.builder("p")
+                .longOpt("inplace")
+                .desc("Converts DDS files in place, converting image.dds to image.png or image.jpg")
                 .build());
 
         options.addOption(Option.builder("h")
@@ -42,54 +45,96 @@ public class DDS {
                 .build());
     }
 
-    public static void perform(CommandLine cli) throws Exception{
+    public static void checkUsage(CommandLine cli) throws Exception {
+        int numArgs = cli.getArgList().size();
+        boolean isPng = cli.hasOption("png");
+        boolean isJpg = cli.hasOption("jpg");
+        if (cli.hasOption("help") ||
+                ! (isPng ^ isJpg) ||
+                numArgs == 0) {
+            OS.usage("dds", "[file]...",
+                    "Converts a DDS file to a PNG/JPG file. Cannot specify both PNG and PNG format.\n\n" +
+                            "Available options:",
+                    options);
+        }
+    }
+
+    private static File changeExt(File file, String newExt) {
+        String path = file.getPath();
+        int extIndex = path.lastIndexOf('.');
+        if (extIndex == -1) {
+            path = path + "." + newExt;
+        } else {
+            path = path.substring(0, extIndex) + "." + newExt;
+        }
+
+        return new File(path);
+    }
+
+    private static ImageReader getDDSImageReader(File file) throws Exception {
+        ImageReader imageReader = ImageIO.getImageReadersBySuffix("dds").next();
+        FileImageInputStream imageInputStream = new FileImageInputStream(file);
+        imageReader.setInput(imageInputStream);
+        return imageReader;
+    }
+
+    private static void writeImage(BufferedImage image, String ext, File output, boolean force) throws Exception{
+        if (!force && !OS.confirmOverwrite(output)) {
+            return;
+        }
+
+        ImageIO.write(image, ext, output);
+    }
+
+    public static void use(CommandLine cli) throws Exception{
+        checkUsage(cli);
+
         // gets remaining arguments that could not be parsed
-        List<String> outputs = cli.getArgList();
+        List<String> args = cli.getArgList();
 
         boolean force = cli.hasOption("force");
+        boolean inplace = cli.hasOption("inplace");
 
         String ext = "png";
         if (cli.hasOption("jpg")) {
             ext = "jpg";
         }
 
-        String file = cli.getOptionValue("png");
-        if (file == null) {
-            file = cli.getOptionValue("jpg");
-        }
+        if (inplace) {
+            for (String filePath : args) {
+                File ddsFile = new File(filePath);
+                File output = changeExt(ddsFile, ext);
+                ImageReader imageReader = getDDSImageReader(ddsFile);
+                int maxImages = imageReader.getNumImages(true);
+                if (maxImages > 1) {
+                    System.out.println(filePath + " has " + maxImages + ", but only first will be extracted.");
+                }
 
-        File ddsFile = new File(file);
-        ImageReader imageReader = ImageIO.getImageReadersBySuffix("dds").next();
-        FileImageInputStream imageInputStream = new FileImageInputStream(ddsFile);
-        imageReader.setInput(imageInputStream);
-        int maxImages = imageReader.getNumImages(true);
-
-        int totalOutputs = outputs.size();
-        if (maxImages == 1 && totalOutputs == 0) {
-            String outputFile;
-            outputFile = ddsFile.getPath();
-            int extIndex = outputFile.lastIndexOf('.');
-            if (extIndex == -1) {
-                outputFile = outputFile + "." + ext;
-            } else {
-                outputFile = outputFile.substring(0, extIndex) + "." + ext;
+                BufferedImage image = imageReader.read(0);
+                writeImage(image, ext, output, force);
             }
-            outputs.add(outputFile);
-            totalOutputs = 1;
-        }
+        } else {
+            File ddsFile = new File(args.remove(0));
+            ImageReader imageReader = ImageIO.getImageReadersBySuffix("dds").next();
+            FileImageInputStream imageInputStream = new FileImageInputStream(ddsFile);
+            imageReader.setInput(imageInputStream);
+            int maxImages = imageReader.getNumImages(true);
 
-        if (totalOutputs != maxImages) {
-            throw new MissingArgumentException(String.format("ERROR: DDS contains %d images, but expecting %d outputs!", maxImages, totalOutputs));
-        }
-
-        for (int i = 0; i < maxImages; i++) {
-            BufferedImage image = imageReader.read(i);
-            File outputFile = new File(outputs.get(i));
-            if (! force && ! OS.confirmOverwrite(outputFile)) {
-                continue;
+            int totalOutputs = args.size();
+            if (maxImages == 1 && totalOutputs == 0) {
+                args.add(changeExt(ddsFile, ext).getPath());
+                totalOutputs = 1;
             }
 
-            ImageIO.write(image, ext, outputFile);
+            if (totalOutputs != maxImages) {
+                throw new MissingArgumentException(String.format("ERROR: DDS contains %d images, but expecting %d outputs!", maxImages, totalOutputs));
+            }
+
+            for (int i = 0; i < maxImages; i++) {
+                BufferedImage image = imageReader.read(i);
+                File outputFile = new File(args.get(i));
+                writeImage(image, ext, outputFile, force);
+            }
         }
     }
 }

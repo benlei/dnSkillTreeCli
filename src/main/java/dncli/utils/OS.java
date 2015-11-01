@@ -1,5 +1,8 @@
 package dncli.utils;
 
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Options;
+
 import java.io.File;
 import java.util.Scanner;
 
@@ -27,5 +30,14 @@ public class OS {
         System.out.print("Enter [Y/n] if you want to overwrite " + file.getPath() + ": ");
         String confirm = scanner.next();
         return "Y".equalsIgnoreCase(confirm);
+    }
+
+    public static void usage(String command, String argsAppend, String description, Options options) {
+        HelpFormatter formatter = new HelpFormatter();
+        if (argsAppend != null && !argsAppend.equals("")) {
+            argsAppend = " " + argsAppend;
+        }
+        formatter.printHelp("dn " + command + " [options]" + argsAppend, description, options, null, false);
+        System.exit(1);
     }
 }

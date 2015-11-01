@@ -1,5 +1,6 @@
 package dncli.dnt;
 
+import dncli.utils.OS;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
@@ -9,6 +10,7 @@ import org.apache.commons.cli.Options;
  */
 public class DNT {
     public final static Options options = new Options();
+
     static {
         options.addOption(Option.builder("c")
                 .longOpt("compile")
@@ -30,7 +32,19 @@ public class DNT {
                 .build());
     }
 
-    public static void perform(CommandLine cli) throws Exception {
+    public static void checkUsage(CommandLine cli) throws Exception {
+        if (!(cli.hasOption("compile") ^ cli.hasOption("remodel") ||
+                cli.hasOption("help") ||
+                cli.getArgList().isEmpty())) {
+            OS.usage("dnt", "file [file]...",
+                    "Parses through DNT file(s) for compiling data for yourself, or remodel a DNT to" +
+                            "your own liking.\n\nYou cannot specify the compile and remodel options together\n\n" +
+                            "Available options:",
+                    options);
+        }
+    }
 
+    public static void use(CommandLine cli) throws Exception {
+        checkUsage(cli);
     }
 }

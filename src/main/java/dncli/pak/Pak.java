@@ -63,7 +63,32 @@ public class Pak {
                 .build());
     }
 
-    public static void perform(CommandLine cli) throws Exception {
+    public static void checkUsage(CommandLine cli) throws Exception {
+        boolean hasInfo = cli.hasOption("info");
+        boolean hasExtract = cli.hasOption("extract");
+        boolean hasCompress = cli.hasOption("compress");
+        boolean hasList = cli.hasOption("list");
+        boolean hasForce = cli.hasOption("force");
+        boolean hasFilter = cli.hasOption("filter");
+        int numArgs = cli.getArgList().size();
+        if (! (hasInfo ^ hasExtract ^ hasCompress) ||
+                ! hasInfo & hasList ||
+                (numArgs == 0) | hasForce & hasInfo ||
+                hasFilter & ! hasExtract ||
+                hasCompress & (numArgs != 2) ||
+                hasExtract & (numArgs < 2) ||
+                cli.hasOption("help")) {
+            OS.usage("pak", "file [file]... [output]",
+                    "Inspects/extracts/compresses a pak. For extracting you can specify a filter to evaluate " +
+                            "what to extract.\n\nYou cannot specify info/extract/compress options together\n\n" +
+                            "Available options:",
+                    options);
+        }
+    }
+
+    public static void use(CommandLine cli) throws Exception {
+        checkUsage(cli);
+
         if (cli.hasOption("extract")) {
             extract(cli);
         } else if (cli.hasOption("compress")) {
