@@ -26,6 +26,12 @@ public class DNT {
                         "the modified entries for the given JavaScript arg.")
                 .build());
 
+
+        options.addOption(Option.builder("q")
+                .longOpt("quiet")
+                .desc("Quiet output.")
+                .build());
+
         options.addOption(Option.builder("h")
                 .longOpt("help")
                 .desc("Shows this usage message.")

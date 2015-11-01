@@ -57,6 +57,11 @@ public class Pak {
                 .desc("(extract only) Uses input JS file's filter(object) function that must return a boolean to decide what to extract.")
                 .build());
 
+        options.addOption(Option.builder("q")
+                .longOpt("quiet")
+                .desc("Quiet output")
+                .build());
+
         options.addOption(Option.builder("h")
                 .longOpt("help")
                 .desc("Shows this usage message.")
@@ -64,19 +69,20 @@ public class Pak {
     }
 
     public static void checkUsage(CommandLine cli) throws Exception {
-        boolean hasInfo = cli.hasOption("info");
-        boolean hasExtract = cli.hasOption("extract");
-        boolean hasCompress = cli.hasOption("compress");
-        boolean hasList = cli.hasOption("list");
-        boolean hasForce = cli.hasOption("force");
+        boolean isInfo = cli.hasOption("info");
+        boolean isExtract = cli.hasOption("extract");
+        boolean isCompress = cli.hasOption("compress");
+        boolean isList = cli.hasOption("list");
+        boolean isForce = cli.hasOption("force");
         boolean hasFilter = cli.hasOption("filter");
+        boolean isQuiet = cli.hasOption("quiet");
         int numArgs = cli.getArgList().size();
-        if (! (hasInfo ^ hasExtract ^ hasCompress) ||
-                ! hasInfo & hasList ||
-                (numArgs == 0) | hasForce & hasInfo ||
-                hasFilter & ! hasExtract ||
-                hasCompress & (numArgs != 2) ||
-                hasExtract & (numArgs < 2) ||
+        if (! (isInfo ^ isExtract ^ isCompress) ||
+                ! isInfo & isList ||
+                (numArgs == 0) | isQuiet | isForce & isInfo ||
+                hasFilter & ! isExtract ||
+                isCompress & (numArgs != 2) ||
+                isExtract & (numArgs < 2) ||
                 cli.hasOption("help")) {
             OS.usage("pak", "file [file]... [output]",
                     "Inspects/extracts/compresses a pak. For extracting you can specify a filter to evaluate " +
@@ -156,6 +162,7 @@ public class Pak {
         String output = paks.remove(paks.size() - 1);
         File outputFile = new File(output);
         boolean force = cli.hasOption("force");
+        boolean quiet = cli.hasOption("quiet");
         Invocable invocable = null;
         if (cli.hasOption("filter")) {
             String filter = cli.getOptionValue("filter");
@@ -178,20 +185,23 @@ public class Pak {
             while ((jsObject = reader.read()) != null) {
                 if (invocable != null) {
                     if ((Boolean)invocable.invokeFunction("filter", jsObject)) {
-                        extractTo(outputFile, force, jsObject);
+                        extractTo(outputFile, force, jsObject, quiet);
                         extracted++;
                     }
                 } else if ((Integer)jsObject.getMember("size") != 0) {
-                    extractTo(outputFile, force, jsObject);
+                    extractTo(outputFile, force, jsObject, quiet);
                     extracted++;
                 }
             }
             long end = System.currentTimeMillis();
-            System.out.println("Extracted " + extracted + " objects from " + pak + " in " + (end - start) + "ms");
+
+            if (! quiet) {
+                System.out.println("Extracted " + extracted + " objects from " + pak + " in " + (end - start) + "ms");
+            }
         }
     }
 
-    private static void extractTo(File parent, boolean force, JSObject jsObject) throws Exception {
+    private static void extractTo(File parent, boolean force, JSObject jsObject, boolean quiet) throws Exception {
         String child = jsObject.getMember("path").toString();
         if (OS.isUnix()) {
             child = child.replace('\\', '/');
@@ -216,7 +226,10 @@ public class Pak {
         FileOutputStream out = new FileOutputStream(output);
         baos.writeTo(out);
         out.close();
-        System.out.println(output.getPath());
+
+        if (! quiet) {
+            System.out.println(output.getPath());
+        }
     }
 
     private static void compress(CommandLine cli) throws Exception {

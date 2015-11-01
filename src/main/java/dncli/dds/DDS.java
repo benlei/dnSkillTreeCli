@@ -39,6 +39,11 @@ public class DDS {
                 .desc("Shows this usage message.")
                 .build());
 
+        options.addOption(Option.builder("q")
+                .longOpt("quiet")
+                .desc("Quiet output")
+                .build());
+
         options.addOption(Option.builder("f")
                 .longOpt("force")
                 .desc("Forces overwriting of destination file without confirmation.")
@@ -94,11 +99,13 @@ public class DDS {
 
         boolean force = cli.hasOption("force");
         boolean inplace = cli.hasOption("inplace");
+        boolean quiet = cli.hasOption("quiet");
 
         String ext = "png";
         if (cli.hasOption("jpg")) {
             ext = "jpg";
         }
+
 
         if (inplace) {
             for (String filePath : args) {
@@ -106,13 +113,15 @@ public class DDS {
                 File output = changeExt(ddsFile, ext);
                 ImageReader imageReader = getDDSImageReader(ddsFile);
                 int maxImages = imageReader.getNumImages(true);
-                if (maxImages > 1) {
+                if (maxImages > 1 && ! quiet) {
                     System.out.println(filePath + " has " + maxImages + ", but only first will be extracted.");
                 }
 
                 BufferedImage image = imageReader.read(0);
                 writeImage(image, ext, output, force);
-                System.out.println("Converted " + ddsFile.getPath() + " to " + output.getPath());
+                if (! quiet) {
+                    System.out.println("Converted " + ddsFile.getPath() + " to " + output.getPath());
+                }
             }
         } else {
             File ddsFile = new File(args.remove(0));
@@ -135,7 +144,9 @@ public class DDS {
                 BufferedImage image = imageReader.read(i);
                 File outputFile = new File(args.get(i));
                 writeImage(image, ext, outputFile, force);
-                System.out.println("Converted " + ddsFile.getPath() + " to " + outputFile.getPath());
+                if (! quiet) {
+                    System.out.println("Converted " + ddsFile.getPath() + " to " + outputFile.getPath());
+                }
             }
         }
     }
