@@ -23,24 +23,31 @@ public class App {
 
         if (cmd.equals("pak")) {
             cli = parser.parse(Pak.options, subArgs);
-            if (!(cli.hasOption("info") ^ cli.hasOption("extract") ^ cli.hasOption("compress") ||
-                    !cli.hasOption("info") & cli.hasOption("list") ||
-                    cli.hasOption("force") & cli.hasOption("info") ||
-                    cli.hasOption("filter") & !cli.hasOption("extract") ||
-                    cli.getArgList().isEmpty() ||
-                    cli.hasOption("help"))) {
-                usage("pak", "file [file]...",
-                        "Inspects/extracts/compresses a pak. For extracting, you can use the filter option with " +
-                                "a JavaScript file with a filter(node) function to have finer control " +
-                                "over what gets extracted.\n\nYou cannot specify info/extract/compress options together\n\n" +
+            boolean hasInfo = cli.hasOption("info");
+            boolean hasExtract = cli.hasOption("extract");
+            boolean hasCompress = cli.hasOption("compress");
+            boolean hasList = cli.hasOption("list");
+            boolean hasForce = cli.hasOption("force");
+            boolean hasFilter = cli.hasOption("filter");
+            int numArgs = cli.getArgList().size();
+            if (! (hasInfo ^ hasExtract ^ hasCompress) ||
+                    ! hasInfo & hasList ||
+                    (numArgs == 0) | hasForce & hasInfo ||
+                    hasFilter & ! hasExtract ||
+                    hasCompress & (numArgs != 2) ||
+                    hasExtract & (numArgs < 2) ||
+                    cli.hasOption("help")) {
+                usage("pak", "file [file]... [output]",
+                        "Inspects/extracts/compresses a pak. For extracting you can specify a filter to evaluate " +
+                                "what to extract.\n\nYou cannot specify info/extract/compress options together\n\n" +
                                 "Available options:",
                         Pak.options);
             }
 
-
+            Pak.perform(cli);
         } else if (cmd.equals("dnt")) {
             cli = parser.parse(DNT.options, subArgs);
-            if (!(cli.hasOption("compile") ^ cli.hasOption("remodel") ||
+            if (! (cli.hasOption("compile") ^ cli.hasOption("remodel") ||
                     cli.hasOption("help") ||
                     cli.getArgList().isEmpty())) {
                 usage("dnt", "file [file]...",
@@ -52,7 +59,7 @@ public class App {
         } else if (cmd.equals("dds")) {
             cli = parser.parse(DDS.options, subArgs);
 
-            if (!(cli.hasOption("png") ^ cli.hasOption("jpg") ||
+            if (! (cli.hasOption("png") ^ cli.hasOption("jpg") ||
                     cli.hasOption("help"))) {
                 usage("dds", "[file]...",
                         "Converts a DDS file to a PNG/JPG file. Cannot specify both PNG and PNG format.\n\n" +
@@ -66,7 +73,7 @@ public class App {
     }
 
     public static void mainUsage() {
-        err.println("Usage: dn <command> [options]");
+        err.println("usage: dn <command> [options]");
         err.println("Extract/compacts data from/for DN related resources. Uses JavaScript to allow");
         err.println("for more control over data.\n");
         err.println("Available commands:");
@@ -81,7 +88,7 @@ public class App {
         if (argsAppend != null && !argsAppend.equals("")) {
             argsAppend = " " + argsAppend;
         }
-        formatter.printHelp("dn " + command + " [options]" + argsAppend, description, options, null, true);
+        formatter.printHelp("dn " + command + " [options]" + argsAppend, description, options, null, false);
         System.exit(1);
     }
 }

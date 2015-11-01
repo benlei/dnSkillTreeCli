@@ -1,6 +1,8 @@
 package dncli.dds;
 
+import dncli.utils.OS;
 import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.MissingArgumentException;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 
@@ -10,10 +12,6 @@ import javax.imageio.stream.FileImageInputStream;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.List;
-import java.util.Scanner;
-
-import static java.lang.System.err;
-import static java.lang.System.out;
 
 /**
  * Created by Benjamin Lei on 10/29/2015.
@@ -47,10 +45,8 @@ public class DDS {
     public static void perform(CommandLine cli) throws Exception{
         // gets remaining arguments that could not be parsed
         List<String> outputs = cli.getArgList();
-        Scanner scanner = null;
-        if (cli.hasOption("f")) {
-            scanner = new Scanner(System.in);
-        }
+
+        boolean force = cli.hasOption("force");
 
         String ext = "png";
         if (cli.hasOption("jpg")) {
@@ -83,19 +79,14 @@ public class DDS {
         }
 
         if (totalOutputs != maxImages) {
-            err.println(String.format("ERROR: DDS contains %d images, but expecting %d outputs!", maxImages, totalOutputs));
-            System.exit(1);
+            throw new MissingArgumentException(String.format("ERROR: DDS contains %d images, but expecting %d outputs!", maxImages, totalOutputs));
         }
 
         for (int i = 0; i < maxImages; i++) {
             BufferedImage image = imageReader.read(i);
             File outputFile = new File(outputs.get(i));
-            if (outputFile.exists() && scanner != null) {
-                out.print("Enter [Y/n] if you want to overwrite " + outputFile.getPath() + ": ");
-                String confirm = scanner.next();
-                if (confirm != null && ! confirm.equals("Y")) {
-                    continue;
-                }
+            if (! force && ! OS.confirmOverwrite(outputFile)) {
+                continue;
             }
 
             ImageIO.write(image, ext, outputFile);
