@@ -79,7 +79,7 @@ public class DDS {
     }
 
     private static void writeImage(BufferedImage image, String ext, File output, boolean force) throws Exception{
-        if (!force && !OS.confirmOverwrite(output)) {
+        if (! force && ! OS.confirmOverwrite(output)) {
             return;
         }
 
@@ -112,6 +112,7 @@ public class DDS {
 
                 BufferedImage image = imageReader.read(0);
                 writeImage(image, ext, output, force);
+                System.out.println("Converted " + ddsFile.getPath() + " to " + output.getPath());
             }
         } else {
             File ddsFile = new File(args.remove(0));
@@ -134,6 +135,7 @@ public class DDS {
                 BufferedImage image = imageReader.read(i);
                 File outputFile = new File(args.get(i));
                 writeImage(image, ext, outputFile, force);
+                System.out.println("Converted " + ddsFile.getPath() + " to " + outputFile.getPath());
             }
         }
     }
