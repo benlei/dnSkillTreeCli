@@ -1,15 +1,15 @@
 package dncli.pak;
 
-import jdk.nashorn.api.scripting.JSObject;
 import org.apache.commons.io.IOUtils;
 
-import javax.script.*;
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 import static java.nio.ByteOrder.LITTLE_ENDIAN;
 
@@ -25,19 +25,6 @@ public class PakReader {
 
     private int size = 0;
     private int index = 0;
-
-    // the compiled script to get a new jsobject
-    private CompiledScript script;
-    {
-        ScriptEngineManager scriptEngineManager = new ScriptEngineManager();
-        Compilable compilable = (Compilable)scriptEngineManager.getEngineByName("nashorn");
-
-        try {
-            script = compilable.compile("({})");
-        } catch (Exception e) {
-            throw new RuntimeException("Could not compile script: " + e.getMessage(), e);
-        }
-    }
 
     public PakReader(File file) throws IOException {
         this(file, true);
@@ -81,7 +68,7 @@ public class PakReader {
         return size;
     }
 
-    public JSObject read() throws IOException {
+    public Map<String, Object> read() throws IOException {
         if (index >= size) {
             IOUtils.closeQuietly(fileChannel);
             IOUtils.closeQuietly(randomAccessFile);
@@ -90,7 +77,7 @@ public class PakReader {
 
         String path;
         byte[] pathBytes = new byte[Pak.PATH_SIZE];
-        JSObject jsObject = getNewJSObject();
+        HashMap<String, Object> map = new HashMap<>();
         int compressedSize;
         int position;
 
@@ -104,7 +91,7 @@ public class PakReader {
         try {
             buf.get(pathBytes);
             buf.position(buf.position() + 4); // skip 4 bytes
-            jsObject.setMember("size", buf.getInt());
+            map.put("size", buf.getInt());
             compressedSize = buf.getInt();
             position = buf.getInt();
             buf.position(buf.position() + 44); // 44 padding bytes
@@ -112,10 +99,10 @@ public class PakReader {
             // fix the path
             path = new String(pathBytes);
             path = path.substring(0, path.indexOf('\0')).trim();
-            jsObject.setMember("path", path);
-            jsObject.setMember("zsize", compressedSize);
-            jsObject.setMember("position", position);
-            jsObject.setMember("index", index);
+            map.put("path", path);
+            map.put("zsize", compressedSize);
+            map.put("position", position);
+            map.put("index", index);
 
             // read compressed contents from pak
             if (readData) {
@@ -126,25 +113,17 @@ public class PakReader {
                 fileChannel.position(position);
                 fileChannel.read(dataBuffer);
                 fileChannel.position(currentPosition);
-                jsObject.setMember("data", data);
+                map.put("data", data);
             }
 
             ++index;
             if (index == size) {
                 read(); // do to close IO
             }
-            return jsObject;
+            return map;
         } catch (IOException e) {
             index = size; // this should stop working now
             return read(); // will close the relevant IO
-        }
-    }
-
-    private JSObject getNewJSObject() {
-        try {
-            return (JSObject) script.eval();
-        } catch (ScriptException e) {
-            throw new RuntimeException("Could not eval script: " + e.getMessage(), e);
         }
     }
 }
