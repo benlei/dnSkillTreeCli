@@ -19,7 +19,6 @@ public class App {
         String[] subArgs = new String[args.length - 1];
         System.arraycopy(args, 1, subArgs, 0, subArgs.length);
 
-
         CommandLineParser parser = new DefaultParser();
         CommandLine cli;
 

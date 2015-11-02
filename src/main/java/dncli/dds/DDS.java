@@ -110,13 +110,18 @@ public class DDS {
         if (inplace) {
             for (String filePath : args) {
                 File ddsFile = new File(filePath);
-                File output = changeExt(ddsFile, ext);
                 ImageReader imageReader = getDDSImageReader(ddsFile);
+
+                // make the jpg/png file
+                File output = changeExt(ddsFile, ext);
+
+                // warn if dds has multiple images
                 int maxImages = imageReader.getNumImages(true);
                 if (maxImages > 1 && ! quiet) {
                     System.out.println(filePath + " has " + maxImages + ", but only first will be extracted.");
                 }
 
+                // output first image in dds
                 BufferedImage image = imageReader.read(0);
                 writeImage(image, ext, output, force);
                 if (! quiet) {
@@ -125,11 +130,10 @@ public class DDS {
             }
         } else {
             File ddsFile = new File(args.remove(0));
-            ImageReader imageReader = ImageIO.getImageReadersBySuffix("dds").next();
-            FileImageInputStream imageInputStream = new FileImageInputStream(ddsFile);
-            imageReader.setInput(imageInputStream);
-            int maxImages = imageReader.getNumImages(true);
+            ImageReader imageReader = getDDSImageReader(ddsFile);
 
+            // make sure there are enough args for files to output
+            int maxImages = imageReader.getNumImages(true);
             int totalOutputs = args.size();
             if (maxImages == 1 && totalOutputs == 0) {
                 args.add(changeExt(ddsFile, ext).getPath());
@@ -140,6 +144,7 @@ public class DDS {
                 throw new MissingArgumentException(String.format("ERROR: DDS contains %d images, but expecting %d outputs!", maxImages, totalOutputs));
             }
 
+            // output all images in dds
             for (int i = 0; i < maxImages; i++) {
                 BufferedImage image = imageReader.read(i);
                 File outputFile = new File(args.get(i));

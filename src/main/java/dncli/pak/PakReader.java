@@ -20,7 +20,7 @@ public class PakReader {
     private final boolean readData;
 
     private final RandomAccessFile randomAccessFile;
-    private final ByteBuffer buf = ByteBuffer.allocateDirect((256 + 4 + 4 + 4 + 4 + 44) * 64); // 19.75 KB
+    private final ByteBuffer buf = ByteBuffer.allocateDirect(Pak.META_SIZE * 64); // 19.75 KB
     private final FileChannel fileChannel;
 
     private int size = 0;
@@ -57,9 +57,9 @@ public class PakReader {
         byte[] headerBytes = new byte[Pak.HEADER.length()];
         ByteBuffer headerBuffer = ByteBuffer.wrap(headerBytes);
         ByteBuffer words = ByteBuffer.allocate(8);
-
         words.order(LITTLE_ENDIAN);
 
+        // check the header
         fileChannel.read(headerBuffer);
         if (! Arrays.equals(headerBytes, Pak.HEADER.getBytes())) {
             throw new IOException("Invalid Pak file header: " + new String(headerBytes));
@@ -89,7 +89,7 @@ public class PakReader {
         }
 
         String path;
-        byte[] pathBytes = new byte[256];
+        byte[] pathBytes = new byte[Pak.PATH_SIZE];
         JSObject jsObject = getNewJSObject();
         int compressedSize;
         int position;
