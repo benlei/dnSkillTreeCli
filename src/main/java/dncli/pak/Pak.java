@@ -6,9 +6,7 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.io.FileUtils;
 
-import javax.script.Invocable;
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
+import javax.script.*;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -193,8 +191,10 @@ public class Pak {
 
             ScriptEngineManager scriptEngineManager = new ScriptEngineManager();
             ScriptEngine scriptEngine = scriptEngineManager.getEngineByName("nashorn");
-            scriptEngine.eval(new FileReader(filterFile));
-            invocable = (Invocable) scriptEngine;
+            Compilable compilable = (Compilable)scriptEngine;
+            invocable = (Invocable)scriptEngine;
+            CompiledScript compiledScript = compilable.compile(new FileReader(filterFile));
+            compiledScript.eval();
         }
 
         for (String pak : paks) {

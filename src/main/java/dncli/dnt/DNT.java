@@ -5,9 +5,7 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 
-import javax.script.Invocable;
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
+import javax.script.*;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -94,7 +92,9 @@ public class DNT {
 
         ScriptEngineManager scriptEngineManager = new ScriptEngineManager();
         ScriptEngine scriptEngine = scriptEngineManager.getEngineByName("nashorn");
-        scriptEngine.eval(new FileReader(script));
+        Compilable compilable = (Compilable)scriptEngine;
+        CompiledScript compiledScript = compilable.compile(new FileReader(script));
+        compiledScript.eval();
         Invocable invocable = (Invocable) scriptEngine;
 
         for (String path : dntPaths) {
@@ -143,9 +143,10 @@ public class DNT {
 
         ScriptEngineManager scriptEngineManager = new ScriptEngineManager();
         ScriptEngine scriptEngine = scriptEngineManager.getEngineByName("nashorn");
-        scriptEngine.eval(new FileReader(script));
+        Compilable compilable = (Compilable)scriptEngine;
+        CompiledScript compiledScript = compilable.compile(new FileReader(script));
+        compiledScript.eval();
         Invocable invocable = (Invocable) scriptEngine;
-
 
         Map<String, Object> map;
         Map<String, String> cols = new HashMap<>();
