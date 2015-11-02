@@ -20,7 +20,7 @@ public class DNT {
         options.addOption(Option.builder("c")
                 .longOpt("compile")
                 .hasArg()
-                .desc("Must have a parsed(dnt) and compile() function for the given JavaScript arg.")
+                .desc("Must have a parsed(name,dnt) and compile() function for the given JavaScript arg.")
                 .build());
 
         options.addOption(Option.builder("m")

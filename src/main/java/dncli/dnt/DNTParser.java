@@ -87,6 +87,8 @@ public class DNTParser {
             entries.add(entry);
         }
 
+        fileChannel.close();
+        randomAccessFile.close();
         return ret;
     }
 }
