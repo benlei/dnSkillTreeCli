@@ -78,8 +78,11 @@ public class DNTParser {
                     case "int":
                         entry.put(col.getKey(), buf.getInt());
                         break;
-                    default: // must be float/double
+                    case "float":
                         entry.put(col.getKey(), buf.getFloat());
+                        break;
+                    case "double":
+                        entry.put(col.getKey(), (double)buf.getFloat());
                         break;
                 }
             }
