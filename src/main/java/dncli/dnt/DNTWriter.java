@@ -75,8 +75,10 @@ public class DNTWriter {
         }
 
         int length = JSUtils.sizeOf(entries);
+        cols.setMember("ID", "int"); // add it back
         for (int i = 0; i < length; i++) {
             JSObject entry = (JSObject)entries.getSlot(i);
+
             for (String col : colsOrdered) {
                 buf.clear();
                 switch (cols.getMember(col).toString()) {
@@ -86,6 +88,7 @@ public class DNTWriter {
                         if (len > Short.MAX_VALUE) {
                             throw new IllegalArgumentException(str + " exceeds " + Short.MAX_VALUE + " characters");
                         }
+
                         buf.putShort((short) len);
                         buf.put(str.getBytes());
                         break;
@@ -94,7 +97,7 @@ public class DNTWriter {
                         buf.putInt(bool ? 1 : 0);
                         break;
                     case "int":
-                        int val = (Integer)entry.getMember(col);
+                        int val = JSUtils.numberToInt(entry.getMember(col));
                         buf.putInt(val);
                         break;
                     case "float":

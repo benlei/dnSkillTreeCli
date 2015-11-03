@@ -40,9 +40,17 @@ public class JSUtils {
         return compiledScript.getEngine();
     }
 
+    public static int numberToInt(Object o) {
+        if (o instanceof Long) {
+            return ((Long) o).intValue();
+        } else {
+            return (Integer)o;
+        }
+    }
+
     public static int sizeOf(JSObject object) {
         if (object.isArray()) {
-            return (Integer)object.getMember("length");
+            return numberToInt(object.getMember("length"));
         } else {
             return object.keySet().size();
         }

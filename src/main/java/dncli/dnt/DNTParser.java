@@ -25,6 +25,7 @@ public class DNTParser {
         JSObject ret = JSUtils.newObject();
         JSObject cols = JSUtils.newObject();
         JSObject entries = JSUtils.newArray();
+
         ret.setMember("cols", cols);
         ret.setMember("entries", entries);
 
