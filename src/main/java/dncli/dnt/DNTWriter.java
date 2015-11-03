@@ -65,7 +65,7 @@ public class DNTWriter {
                 case "float":  buf.put((byte) 4); break;
                 case "double": buf.put((byte) 5); break;
                 default: // must be float/double
-                    throw new IllegalArgumentException(String.format("Column %s contain an invalid type %s",
+                    throw new IllegalArgumentException(String.format("Column %s contain an invalid type %s (only accept string, bool, int, float, and double as types)",
                             col,
                             cols.getMember(col).toString()));
             }
