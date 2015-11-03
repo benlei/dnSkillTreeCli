@@ -37,12 +37,14 @@ public class DNTWriter {
         buf.flip();
         fileChannel.write(buf);
 
-
         List<String> colsOrdered = new ArrayList<>();
+        // ID must be first element
         colsOrdered.add("ID");
         for (Map.Entry<String, String> col : cols.entrySet()) {
             buf.clear();
             String colName = col.getKey();
+
+            // make sure length isn't too long
             int colSize = colName.length() + 1;
             if (colSize > Short.MAX_VALUE) {
                 throw new IllegalArgumentException("_" + colName + " exceeds " + Short.MAX_VALUE + " characters");
@@ -50,6 +52,7 @@ public class DNTWriter {
 
             colsOrdered.add(colName);
 
+            // make sure all col names start with '_'
             buf.putShort((short)colSize);
             buf.put(("_" + colName).getBytes());
             switch (col.getValue()) {
@@ -103,5 +106,8 @@ public class DNTWriter {
                 fileChannel.write(buf);
             }
         }
+
+        fileChannel.close();
+        randomAccessFile.close();
     }
 }
