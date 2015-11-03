@@ -9,7 +9,7 @@ import java.util.Scanner;
 /**
  * Created by Benjamin Lei on 10/29/2015.
  */
-public class OS {
+public class OsUtils {
     public static final boolean windows = System.getProperty("os.name").toLowerCase().contains("win");
     public static final boolean unix = ! windows;
     private static Scanner scanner = new Scanner(System.in);
@@ -40,4 +40,6 @@ public class OS {
         formatter.printHelp("dn " + command + " [options]" + argsAppend, description, options, null, false);
         System.exit(1);
     }
+
+
 }

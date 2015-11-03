@@ -1,5 +1,7 @@
 package dncli.pak;
 
+import dncli.utils.JSUtils;
+import jdk.nashorn.api.scripting.JSObject;
 import org.apache.commons.io.IOUtils;
 
 import java.io.File;
@@ -8,8 +10,6 @@ import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
 
 import static java.nio.ByteOrder.LITTLE_ENDIAN;
 
@@ -68,7 +68,7 @@ public class PakReader {
         return size;
     }
 
-    public Map<String, Object> read() throws IOException {
+    public JSObject read() throws Exception {
         if (index >= size) {
             IOUtils.closeQuietly(fileChannel);
             IOUtils.closeQuietly(randomAccessFile);
@@ -77,7 +77,7 @@ public class PakReader {
 
         String path;
         byte[] pathBytes = new byte[Pak.PATH_SIZE];
-        HashMap<String, Object> map = new HashMap<>();
+        JSObject map = JSUtils.newObject();
         int compressedSize;
         int position;
 
@@ -91,7 +91,7 @@ public class PakReader {
         try {
             buf.get(pathBytes);
             buf.position(buf.position() + 4); // skip 4 bytes
-            map.put("size", buf.getInt());
+            map.setMember("size", buf.getInt());
             compressedSize = buf.getInt();
             position = buf.getInt();
             buf.position(buf.position() + 44); // 44 padding bytes
@@ -99,10 +99,10 @@ public class PakReader {
             // fix the path
             path = new String(pathBytes);
             path = path.substring(0, path.indexOf('\0')).trim();
-            map.put("path", path);
-            map.put("zsize", compressedSize);
-            map.put("position", position);
-            map.put("index", index);
+            map.setMember("path", path);
+            map.setMember("zsize", compressedSize);
+            map.setMember("position", position);
+            map.setMember("index", index);
 
             // read compressed contents from pak
             if (readData) {
@@ -113,7 +113,7 @@ public class PakReader {
                 fileChannel.position(position);
                 fileChannel.read(dataBuffer);
                 fileChannel.position(currentPosition);
-                map.put("data", data);
+                map.setMember("data", data);
             }
 
             ++index;

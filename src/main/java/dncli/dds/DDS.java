@@ -1,6 +1,6 @@
 package dncli.dds;
 
-import dncli.utils.OS;
+import dncli.utils.OsUtils;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.MissingArgumentException;
 import org.apache.commons.cli.Option;
@@ -57,7 +57,7 @@ public class DDS {
         if (cli.hasOption("help") ||
                 ! (isPng ^ isJpg) ||
                 numArgs == 0) {
-            OS.usage("dds", "[file]...",
+            OsUtils.usage("dds", "[file]...",
                     "Converts a DDS file to a PNG/JPG file. Cannot specify both PNG and PNG format.\n\n" +
                             "Available options:",
                     options);
@@ -84,7 +84,7 @@ public class DDS {
     }
 
     private static void writeImage(BufferedImage image, String ext, File output, boolean force) throws Exception{
-        if (! force && ! OS.confirmOverwrite(output)) {
+        if (! force && ! OsUtils.confirmOverwrite(output)) {
             return;
         }
 

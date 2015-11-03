@@ -1,13 +1,13 @@
 package dncli.dnt;
 
+import dncli.utils.JSUtils;
+import jdk.nashorn.api.scripting.JSObject;
+
 import java.io.File;
-import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.FileChannel;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -21,12 +21,12 @@ public class DNTParser {
         this.file = file;
     }
 
-    public Map<String, Object> parse() throws IOException {
-        HashMap<String, Object> ret = new HashMap<>();
-        HashMap<String, String> cols = new HashMap<>();
-        ArrayList<HashMap<String, Object>> entries = new ArrayList<>();
-        ret.put("cols", cols);
-        ret.put("entries", entries);
+    public JSObject parse() throws Exception {
+        JSObject ret = JSUtils.newObject();
+        JSObject cols = JSUtils.newObject();
+        JSObject entries = JSUtils.newArray();
+        ret.setMember("cols", cols);
+        ret.setMember("entries", entries);
 
         RandomAccessFile randomAccessFile = new RandomAccessFile(file, "r");
         FileChannel fileChannel = randomAccessFile.getChannel();
@@ -59,35 +59,35 @@ public class DNTParser {
 
         // store cols into the cols map (unordered) for JS
         for (Map.Entry<String, String> col : colsOrdered.entrySet()) {
-            cols.put(col.getKey(), col.getValue());
+            cols.setMember(col.getKey(), col.getValue());
         }
 
         // read each row and put it into entries
         for (int i = 0; i < numRows; i++) {
-            HashMap<String, Object> entry = new HashMap<>();
+            JSObject entry = JSUtils.newObject();
             for (Map.Entry<String, String> col : colsOrdered.entrySet()) {
                 switch (col.getValue()) {
                     case "string":
                         byte[] bytes = new byte[buf.getShort()];
                         buf.get(bytes);
-                        entry.put(col.getKey(), new String(bytes));
+                        entry.setMember(col.getKey(), new String(bytes));
                         break;
                     case "bool":
-                        entry.put(col.getKey(), buf.getInt() != 0);
+                        entry.setMember(col.getKey(), buf.getInt() != 0);
                         break;
                     case "int":
-                        entry.put(col.getKey(), buf.getInt());
+                        entry.setMember(col.getKey(), buf.getInt());
                         break;
                     case "float":
-                        entry.put(col.getKey(), buf.getFloat());
+                        entry.setMember(col.getKey(), buf.getFloat());
                         break;
                     case "double":
-                        entry.put(col.getKey(), (double)buf.getFloat());
+                        entry.setMember(col.getKey(), (double)buf.getFloat());
                         break;
                 }
             }
 
-            entries.add(entry);
+            JSUtils.push(entries, entry);
         }
 
         fileChannel.close();

@@ -1,6 +1,8 @@
 package dncli.pak;
 
-import dncli.utils.OS;
+import dncli.utils.JSUtils;
+import dncli.utils.OsUtils;
+import jdk.nashorn.api.scripting.JSObject;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
@@ -11,7 +13,6 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.zip.Inflater;
 
 /**
@@ -93,7 +94,7 @@ public class Pak {
                 !isCompress & hasMin ||
                 isExtract & (numArgs < 2) ||
                 cli.hasOption("help")) {
-            OS.usage("pak", "file [file]... [output]",
+            OsUtils.usage("pak", "file [file]... [output]",
                     "Inspects/extracts/compresses a pak. For extracting you can specify a filter to evaluate " +
                             "what to extract.\n\nYou cannot specify info/extract/compress options together\n\n" +
                             "Available options:",
@@ -131,9 +132,9 @@ public class Pak {
         // go through all the paks
         for (int i = 0; i < paks.size(); i++) {
             PakReader reader = pakList.get(i);
-            ArrayList<Map<String, Object>> maps = new ArrayList<>();
+            ArrayList<JSObject> maps = new ArrayList<>();
             int deleted = 0;
-            Map<String, Object> map;
+            JSObject map;
 
             // read each pak and record if anything was deleted or not.
             while ((map = reader.read()) != null) {
@@ -142,7 +143,7 @@ public class Pak {
 
                 }
 
-                int size = (Integer) map.get("size");
+                int size = (Integer) map.getMember("size");
                 if (size == 0) {
                     deleted++;
                 }
@@ -156,9 +157,9 @@ public class Pak {
 
             // show list of all objects in pak, if it was deleted, and the original to compressed size
             if (showList) {
-                for (Map<String, Object> object : maps) {
-                    int size = (Integer) object.get("size");
-                    int zSize = (Integer) object.get("zsize");
+                for (JSObject object : maps) {
+                    int size = (Integer) object.getMember("size");
+                    int zSize = (Integer) object.getMember("zsize");
                     String extraMessage;
                     if (size == 0) {
                         extraMessage = "*deleted*";
@@ -166,7 +167,7 @@ public class Pak {
                         extraMessage = String.format("(%dB -> %dB)", size, zSize);
                     }
                     System.out.println(String.format("%s %s",
-                            object.get("path"),
+                            object.getMember("path"),
                             extraMessage));
                 }
             }
@@ -189,18 +190,13 @@ public class Pak {
                 throw new FileNotFoundException(filter);
             }
 
-            ScriptEngineManager scriptEngineManager = new ScriptEngineManager();
-            ScriptEngine scriptEngine = scriptEngineManager.getEngineByName("nashorn");
-            Compilable compilable = (Compilable)scriptEngine;
-            invocable = (Invocable)scriptEngine;
-            CompiledScript compiledScript = compilable.compile(new FileReader(filterFile));
-            compiledScript.eval();
+            invocable = (Invocable) JSUtils.compile(filterFile);
         }
 
         for (String pak : paks) {
             int extracted = 0;
             PakReader reader = new PakReader(new File(pak));
-            Map<String, Object> map;
+            JSObject map;
             long start = System.currentTimeMillis();
 
             // get each js object, maybe filter it, then extract it to output location
@@ -210,7 +206,7 @@ public class Pak {
                         extractTo(outputFile, force, map, quiet);
                         extracted++;
                     }
-                } else if ((Integer) map.get("size") != 0) {
+                } else if ((Integer) map.getMember("size") != 0) {
                     extractTo(outputFile, force, map, quiet);
                     extracted++;
                 }
@@ -223,16 +219,16 @@ public class Pak {
         }
     }
 
-    private static void extractTo(File parent, boolean force, Map<String, Object> map, boolean quiet) throws Exception {
-        String child = map.get("path").toString();
+    private static void extractTo(File parent, boolean force, JSObject map, boolean quiet) throws Exception {
+        String child = map.getMember("path").toString();
 
         // fix the path
-        if (OS.isUnix()) {
+        if (OsUtils.isUnix()) {
             child = child.replace('\\', '/');
         }
 
         File output = new File(parent, child);
-        if (! force && ! OS.confirmOverwrite(output)) {
+        if (! force && ! OsUtils.confirmOverwrite(output)) {
             return;
         }
 
@@ -241,7 +237,7 @@ public class Pak {
         Inflater inflater = new Inflater();
 
         // unzip contents
-        inflater.setInput((byte[]) map.get("data"));
+        inflater.setInput((byte[]) map.getMember("data"));
         while ((read = inflater.inflate(data)) != 0) {
             baos.write(data, 0, read);
         }
@@ -268,7 +264,7 @@ public class Pak {
         int min = 0;
 
         // make sure user OK with overwriting
-        if (! force && ! OS.confirmOverwrite(outputFile)) {
+        if (! force && ! OsUtils.confirmOverwrite(outputFile)) {
             return;
         }
 
@@ -304,7 +300,7 @@ public class Pak {
         while (iterator.hasNext()) {
             File file = iterator.next();
             String path = file.getPath().substring(dirLen);
-            if (OS.isUnix()) {
+            if (OsUtils.isUnix()) {
                 path = path.replace('/', '\\');
             }
             writer.write(file, path);

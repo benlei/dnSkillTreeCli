@@ -1,15 +1,17 @@
 package dncli.dnt;
 
-import dncli.utils.OS;
+import dncli.utils.JSUtils;
+import dncli.utils.OsUtils;
+import jdk.nashorn.api.scripting.JSObject;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 
-import javax.script.*;
+import javax.script.Invocable;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by Benjamin Lei on 10/29/2015.
@@ -62,7 +64,7 @@ public class DNT {
                 ! isModel & isForce ||
                 isCompile & (numArgs == 0) ||
                 cli.hasOption("help")) {
-            OS.usage("dnt", "file [file]...",
+            OsUtils.usage("dnt", "file [file]...",
                     "Parses through DNT file(s) for compiling data for yourself, or (re)model a DNT to" +
                             "your own liking.\n\nYou cannot specify the compile and remodel options together\n\n" +
                             "Available options:",
@@ -90,12 +92,7 @@ public class DNT {
             throw new FileNotFoundException(scriptPath);
         }
 
-        ScriptEngineManager scriptEngineManager = new ScriptEngineManager();
-        ScriptEngine scriptEngine = scriptEngineManager.getEngineByName("nashorn");
-        Compilable compilable = (Compilable)scriptEngine;
-        CompiledScript compiledScript = compilable.compile(new FileReader(script));
-        compiledScript.eval();
-        Invocable invocable = (Invocable) scriptEngine;
+        Invocable invocable = (Invocable) JSUtils.compile(script);
 
         for (String path : dntPaths) {
             File file = new File(path);
@@ -108,8 +105,8 @@ public class DNT {
 
         for (File file : dnts) {
             DNTParser parser = new DNTParser(file);
-            Map<String, Object> map = parser.parse();
-            invocable.invokeFunction("accumulate", file, map.get("entries"));
+            JSObject map = parser.parse();
+            invocable.invokeFunction("accumulate", file, map.getMember("entries"));
         }
 
         invocable.invokeFunction("compile");
@@ -133,7 +130,7 @@ public class DNT {
             outputDnt = new File(args.get(1));
         }
 
-        if (outputDnt.exists() && ! cli.hasOption("force") && ! OS.confirmOverwrite(outputDnt)) {
+        if (outputDnt.exists() && ! cli.hasOption("force") && ! OsUtils.confirmOverwrite(outputDnt)) {
             return;
         }
 
@@ -141,29 +138,23 @@ public class DNT {
             throw new FileNotFoundException(scriptPath);
         }
 
-        ScriptEngineManager scriptEngineManager = new ScriptEngineManager();
-        ScriptEngine scriptEngine = scriptEngineManager.getEngineByName("nashorn");
-        Compilable compilable = (Compilable)scriptEngine;
-        CompiledScript compiledScript = compilable.compile(new FileReader(script));
-        compiledScript.eval();
-        Invocable invocable = (Invocable) scriptEngine;
+        Invocable invocable = (Invocable) JSUtils.compile(script);
 
-        Map<String, Object> map;
-        Map<String, String> cols = new HashMap<>();
-        ArrayList<HashMap<String, Object>> entries = new ArrayList<>();
+        JSObject map;
+        JSObject cols = JSUtils.newObject();
+        JSObject entries = JSUtils.newArray();
 
-        if (dntFile == null) {
-            map = (Map) invocable.invokeFunction("model",
-                    new HashMap<String, String>(),
-                    new ArrayList<HashMap<String, Object>>());
+        if (dntFile == null) { // no input dnt given
+            map = (JSObject) invocable.invokeFunction("model", cols, entries);
         } else {
             DNTParser parser = new DNTParser(dntFile);
             map = parser.parse();
-            map = (Map)invocable.invokeFunction("model", map.get("cols"), map.get("entries"));
+            map = (JSObject)invocable.invokeFunction("remodel", map.getMember("cols"), map.getMember(("entries")));
         }
 
         DNTWriter writer = new DNTWriter(outputDnt);
-        writer.write((Map<String, String>)map.get("cols"),
-                (List<Map<String, Object>>)map.get("entries"));
+        cols = (JSObject)map.getMember("cols");
+        entries = (JSObject) map.getMember("entries");
+        writer.write(cols, entries);
     }
 }
