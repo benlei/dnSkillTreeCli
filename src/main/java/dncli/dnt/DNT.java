@@ -149,7 +149,7 @@ public class DNT {
         } else {
             DNTParser parser = new DNTParser(dntFile);
             map = parser.parse();
-            map = (JSObject)invocable.invokeFunction("remodel", map.getMember("cols"), map.getMember(("entries")));
+            map = (JSObject)invocable.invokeFunction("model", map.getMember("cols"), map.getMember(("entries")));
         }
 
         DNTWriter writer = new DNTWriter(outputDnt);
