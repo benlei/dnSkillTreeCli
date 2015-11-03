@@ -117,7 +117,7 @@ public class DNT {
         String scriptPath = cli.getOptionValue("model");
         File script = new File(scriptPath);
         File dntFile = null;
-        File outputDnt = null;
+        File outputDnt;
 
         if (args.size() == 1) {
             outputDnt = new File(args.get(0));
