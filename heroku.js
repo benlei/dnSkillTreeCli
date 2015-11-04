@@ -56,6 +56,8 @@ var compile = function() { // DuplicatedSkillType = for checking if in same 'gro
         uistring[parseInt(e.getAttribute("mid"))] = e.getFirstChild().getData()
     }
 
+//    print(JSON.stringify(skills[0], null, 2))
+//    exit()
     jsons = []
     jobs.filter(function(job) job.Service).forEach(function(job) {
         // fix a few things
@@ -68,6 +70,7 @@ var compile = function() { // DuplicatedSkillType = for checking if in same 'gro
             JobIcon: job.JobIcon,
             SkillTree: [],
             Skills: {},
+            Lookup: {},
         }
 
         // primary class
@@ -91,7 +94,9 @@ var compile = function() { // DuplicatedSkillType = for checking if in same 'gro
         // setup skill table
         jobSkills = skills.filter(function(s) s.NeedJob == job.ID)
         jobSkillsID = jobSkills.map(function(s) s.ID)
-        skillTree.filter(function(t) jobSkillsID.indexOf(t.SkillTableID) > -1).forEach(function(t) {
+        jobSkillTree = skillTree.filter(function(t) jobSkillsID.indexOf(t.SkillTableID) > -1)
+        jobSkillTreeIDs = jobSkillTree.map(function(t) t.SkillTableID)
+        jobSkillTree.filter(function(t) jobSkillsID.indexOf(t.SkillTableID) > -1).forEach(function(t) {
             json.SkillTree[t.TreeSlotIndex] = t.SkillTableID
 
             // setup initial Skills with job sp req
@@ -117,19 +122,19 @@ var compile = function() { // DuplicatedSkillType = for checking if in same 'gro
         })
 
         // setup skill levels
-        jobSkills.forEach(function(s) {
-            var levels = skillLevels.filter(function(l) jobSkillsID.indexOf(l.SkillIndex))
+        jobSkills.filter(function(s) jobSkillTreeIDs.indexOf(s.ID) > -1).forEach(function(s) {
+            var levels = skillLevels.filter(function(l) l.SkillIndex == s.ID)
             var skill = json.Skills[s.ID]
-            skill.Name = uistring[s.NameID]
+            skill.Name = uistring[s.NameID] // generally are not used in description
             skill.MaxLevel = s.MaxLevel
             skill.SPMaxLevel = s.SPMaxLevel
             skill.IconImageIndex = s.IconImageIndex
             skill.SkillType = s.SkillType
-            skill.Levels = []
+            skill.Levels = {}
 
-            // SkillDuplicate is uncommon
-            if (s.SkillDuplicate > 0) {
-                skill.SkillDuplicate = s.SkillDuplicate
+            // BaseSkillID is when two skills can't be set at same time
+            if (s.BaseSkillID > 0) {
+                skill.BaseSkillID = s.BaseSkillID
             }
 
             // weapons can be uncommon + order doesn't matter
@@ -145,23 +150,41 @@ var compile = function() { // DuplicatedSkillType = for checking if in same 'gro
             }
 
             // PvE
-            levels.filter(function(l) l.ApplyType == 0 && l.LevelLimit <= s.MaxLevel).forEach(function(l) {
+            levels.filter(function(l) l.ApplyType == 0 && l.SkillLevel > 0 && l.SkillLevel <= s.MaxLevel).forEach(function(l) {
+                skill.Levels[l.SkillLevel] = {
+                    LevelLimit: l.LevelLimit, // required level
+                    SkillPoint: l.NeedSkillPoint,
+                    PvE: {
+                        DelayTime: l.DelayTime, // cooldown
+                        DecreaseSP: l.DecreaseSP, // really is MP...
+                        SkillExplanationID: l.SkillExplanationID,
+                        SkillExplanationIDParam: l.SkillExplanationIDParam,
+                    },
+                }
 
+//                print(JSON.stringify(skill.Levels[l.SkillLevel], null, 2))
+//                exit()
+                // add uistring
             })
 
             // PvP
-            levels.filter(function(l) l.ApplyType != 0 && l.LevelLimit <= s.MaxLevel).forEach(function(l) {
-
+            levels.filter(function(l) l.ApplyType == 1 && l.SkillLevel > 0 && l.SkillLevel <= s.MaxLevel).forEach(function(l) {
+                skill.Levels[l.SkillLevel].PvP = {
+                    DelayTime: l.DelayTime,
+                    DecreaseSP: l.DecreaseSP,
+                    SkillExplanationID: l.SkillExplanationID,
+                    SkillExplanationIDParam: l.SkillExplanationIDParam,
+                }
             })
         })
 
-        // setup levels
-        print(JSON.stringify(json, null, 2))
-
-        exit()
-
         jsons.push(json)
     })
+
+    // setup levels
+    print(JSON.stringify(jsons[jsons.length - 1], null, 2))
+    exit()
+
 
 
 
