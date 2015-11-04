@@ -23,7 +23,7 @@ public class DNT {
         options.addOption(Option.builder("c")
                 .longOpt("compile")
                 .hasArg()
-                .desc("Must have an accumulate(file,list) and compile() function for the given JavaScript arg.")
+                .desc("Must have an accumulate(entries,cols,file) and compile() function for the given JavaScript arg.")
                 .build());
 
         options.addOption(Option.builder("m")
@@ -106,7 +106,7 @@ public class DNT {
         for (File file : dnts) {
             DNTParser parser = new DNTParser(file);
             JSObject map = parser.parse();
-            invocable.invokeFunction("accumulate", file, map.getMember("entries"));
+            invocable.invokeFunction("accumulate", map.getMember("cols"), map.getMember("entries"), file);
         }
 
         invocable.invokeFunction("compile");
