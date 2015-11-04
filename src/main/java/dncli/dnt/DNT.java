@@ -106,7 +106,7 @@ public class DNT {
         for (File file : dnts) {
             DNTParser parser = new DNTParser(file);
             JSObject map = parser.parse();
-            invocable.invokeFunction("accumulate", map.getMember("cols"), map.getMember("entries"), file);
+            invocable.invokeFunction("accumulate", map.getMember("entries"), map.getMember("cols"), file);
         }
 
         invocable.invokeFunction("compile");
