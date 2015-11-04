@@ -150,16 +150,25 @@ var compile = function() { // DuplicatedSkillType = for checking if in same 'gro
             }
 
             // PvE
-            levels.filter(function(l) l.ApplyType == 0 && l.SkillLevel > 0 && l.SkillLevel <= s.MaxLevel).forEach(function(l) {
-                skill.Levels[l.SkillLevel] = {
-                    LevelLimit: l.LevelLimit, // required level
-                    SkillPoint: l.NeedSkillPoint,
-                    PvE: {
-                        DelayTime: l.DelayTime, // cooldown
-                        DecreaseSP: l.DecreaseSP, // really is MP...
-                        SkillExplanationID: l.SkillExplanationID,
-                        SkillExplanationIDParam: l.SkillExplanationIDParam,
-                    },
+            levels.filter(function(l) l.SkillLevel > 0 && l.SkillLevel <= s.MaxLevel).forEach(function(l) {
+                if (! skill.Levels[l.SkillLevel]) {
+                    skill.Levels[l.SkillLevel] = {}
+                }
+
+                level = skill.Levels[l.SkillLevel]
+                var applyType = {
+                    DelayTime: l.DelayTime, // cooldown
+                    DecreaseSP: l.DecreaseSP, // really is MP...
+                    SkillExplanationID: l.SkillExplanationID,
+                    SkillExplanationIDParam: l.SkillExplanationIDParam,
+                }
+
+                if (l.ApplyType == 0) {
+                    level.LevelLimit = l.LevelLimit // required level
+                    level.SkillPoint: l.NeedSkillPoint
+                    level.PvE = applyType
+                } else {
+                    level.PvP = applyType
                 }
 
 //                print(JSON.stringify(skill.Levels[l.SkillLevel], null, 2))
