@@ -1,1 +1,0 @@
-# Nashorn script uses to download paks from web

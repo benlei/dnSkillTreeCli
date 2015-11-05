@@ -39,13 +39,12 @@ public class DNTParser {
 
         // get cols and their type (in order)
         Map<String, String> colsOrdered = new LinkedHashMap<>();
-        colsOrdered.put("ID", "int");
+        colsOrdered.put("PrimaryID", "int");
         for (int i = 0; i < numCols; i++) {
             byte[] fieldNameBytes = new byte[buf.getShort()];
             buf.get(fieldNameBytes);
             String fieldName = new String(fieldNameBytes);
             byte type = buf.get();
-
             fieldName = fieldName.substring(1);
             switch (type) {
                 case 1: colsOrdered.put(fieldName, "string"); break;

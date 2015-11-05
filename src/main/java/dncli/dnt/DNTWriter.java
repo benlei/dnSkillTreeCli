@@ -27,7 +27,7 @@ public class DNTWriter {
         FileChannel fileChannel = randomAccessFile.getChannel();
         ByteBuffer buf = ByteBuffer.allocateDirect(Short.MAX_VALUE + 2 + 1);
         buf.order(ByteOrder.LITTLE_ENDIAN);
-        cols.removeMember("ID");
+        cols.removeMember("PrimaryID");
 
         // padding
         buf.putInt(0);
@@ -42,7 +42,7 @@ public class DNTWriter {
         List<String> colsOrdered = new ArrayList<>();
 
         // ID must be first element
-        colsOrdered.add("ID");
+        colsOrdered.add("PrimaryID");
 
         for (String col : cols.keySet()) {
             buf.clear();
@@ -75,7 +75,7 @@ public class DNTWriter {
         }
 
         int length = JSUtils.sizeOf(entries);
-        cols.setMember("ID", "int"); // add it back
+        cols.setMember("PrimaryID", "int"); // add it back
         for (int i = 0; i < length; i++) {
             JSObject entry = (JSObject)entries.getSlot(i);
 
