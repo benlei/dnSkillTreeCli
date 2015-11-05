@@ -2,7 +2,7 @@
 // Pak object filter
 //======================================
 var regExps = {
-    dnt: /\\(skilltable_character.*|skillleveltable_character.+|skilltreetable|jobtable|playerleveltable)\.dnt$/i,
+    dnt: /\\(skilltable_character.*|skillleveltable_character.*|skilltreetable|jobtable|playerleveltable|itemtable|weapontable)\.dnt$/i,
     jobicon: /^\\resource\\ui\\mainbar\\jobicon.*/i,
     skillicon: /^\\resource\\ui\\mainbar\\skillicon.*/i,
     uistring: /^\\resource\\uistring\\uistring.xml$/i,
@@ -24,11 +24,16 @@ var filter = function(node) {
 //======================================
 // DNT compiling
 //======================================
+var LEVEL_CAP = 80
+var JSON_OUTPUT_DIR = "D:\\json\\" // must include trailing slash
+
 var skills = []
 var skillLevels = []
 var jobs = []
 var playerLevels = []
 var skillTree = []
+var items = []
+var weapons = []
 var accumulate = function(entries, cols, file) {
     var name = file.getName()
     if (name.startsWith("skilltable")) {
@@ -41,30 +46,64 @@ var accumulate = function(entries, cols, file) {
         jobs = jobs.concat(entries)
     } else if (name.startsWith("playerleveltable")) {
         playerLevels = playerLevels.concat(entries)
+    } else if (name.startsWith("itemtable")) {
+        items = items.concat(entries)
+    } else if (name.startsWith("weapontable")) {
+        weapons = weapons.concat(entries)
     }
 }
 
-var compile = function() { // DuplicatedSkillType = for checking if in same 'group'
+var compile = function() {
+    //================================================
+    // Setup the UI String
+    //================================================
     var uistring = []
     var uistringFile = new java.io.File("D:\\resource\\uistring\\uistring.xml")
     var document = javax.xml.parsers.DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(uistringFile)
     document.getDocumentElement().normalize()
-
     var nodes = document.getElementsByTagName("message")
     for (var i = 0; i < nodes.getLength(); i++) {
         var e = nodes.item(i)
         uistring[parseInt(e.getAttribute("mid"))] = e.getFirstChild().getData()
     }
 
-//    print(JSON.stringify(skills[0], null, 2))
-//    exit()
-    jsons = []
+    //================================================
+    // get the player levels
+    //================================================
+    playerLevels = playerLevels.filter(function(p) p.PrimaryID <= LEVEL_CAP).map(function(p) p.SkillPoint)
+    write("levels", playerLevels)
+
+    //================================================
+    // get the weapons
+    //================================================
+    var weaponTypeNameIDs = {}
+    items.filter(function(i) i.NameID == 1000006853 && i.LevelLimit == 1)
+        .reduce(function(p,c) {
+            var find = p.filter(function(_p) _p.NameIDParam == c.NameIDParam)
+            if (find.length == 0) {
+                p.push(c)
+            }
+            return p
+        }, [])
+        .forEach(function(i) {
+            var weapon = weapons.filter(function(w) w.PrimaryID == i.PrimaryID)[0]
+            weaponTypeNameIDs[weapon.EquipType] = uistring[i.NameIDParam.substring(1, i.NameIDParam.length - 1)]
+        })
+
+    write("weapons", weaponTypeNameIDs)
+
+    //================================================
+    // generate the job info, skill tree, and skills
+    //================================================
     jobs.filter(function(job) job.Service).forEach(function(job) {
+        // subset of the uistring
+        var uistringSubset = {}
+
         // fix a few things
         job.MaxSPJob1 = Number(job.MaxSPJob1.toFixed(3))
         job.EnglishName = job.EnglishName.toLowerCase()
 
-        json = {
+        var json = {
             EnglishName: job.EnglishName,
             JobName: uistring[job.JobName],
             JobIcon: job.JobIcon,
@@ -75,8 +114,8 @@ var compile = function() { // DuplicatedSkillType = for checking if in same 'gro
 
         // primary class
         if (job.JobNumber == 2) {
-            var job1 = jobs.filter(function(j) j.ID == job.ParentJob)[0]
-            var job0 = jobs.filter(function(j) j.ID == job1.ParentJob)[0]
+            var job1 = jobs.filter(function(j) j.PrimaryID == job.ParentJob)[0]
+            var job0 = jobs.filter(function(j) j.PrimaryID == job1.ParentJob)[0]
             json.Set = [
                 job0.EnglishName.toLowerCase(),
                 job1.EnglishName.toLowerCase(),
@@ -92,8 +131,8 @@ var compile = function() { // DuplicatedSkillType = for checking if in same 'gro
 
 
         // setup skill table
-        jobSkills = skills.filter(function(s) s.NeedJob == job.ID)
-        jobSkillsID = jobSkills.map(function(s) s.ID)
+        jobSkills = skills.filter(function(s) s.NeedJob == job.PrimaryID)
+        jobSkillsID = jobSkills.map(function(s) s.PrimaryID)
         jobSkillTree = skillTree.filter(function(t) jobSkillsID.indexOf(t.SkillTableID) > -1)
         jobSkillTreeIDs = jobSkillTree.map(function(t) t.SkillTableID)
         jobSkillTree.filter(function(t) jobSkillsID.indexOf(t.SkillTableID) > -1).forEach(function(t) {
@@ -122,9 +161,9 @@ var compile = function() { // DuplicatedSkillType = for checking if in same 'gro
         })
 
         // setup skill levels
-        jobSkills.filter(function(s) jobSkillTreeIDs.indexOf(s.ID) > -1).forEach(function(s) {
-            var levels = skillLevels.filter(function(l) l.SkillIndex == s.ID)
-            var skill = json.Skills[s.ID]
+        jobSkills.filter(function(s) jobSkillTreeIDs.indexOf(s.PrimaryID) > -1).forEach(function(s) {
+            var levels = skillLevels.filter(function(l) l.SkillIndex == s.PrimaryID)
+            var skill = json.Skills[s.PrimaryID]
             skill.Name = uistring[s.NameID] // generally are not used in description
             skill.MaxLevel = s.MaxLevel
             skill.SPMaxLevel = s.SPMaxLevel
@@ -163,45 +202,53 @@ var compile = function() { // DuplicatedSkillType = for checking if in same 'gro
                     SkillExplanationIDParam: l.SkillExplanationIDParam,
                 }
 
-                if (l.ApplyType == 0) {
-                    level.LevelLimit = l.LevelLimit // required level
-                    level.SkillPoint: l.NeedSkillPoint
-                    level.PvE = applyType
-                } else {
-                    level.PvP = applyType
+                if (! level.ApplyType)  {
+                    level.ApplyType = []
                 }
 
-//                print(JSON.stringify(skill.Levels[l.SkillLevel], null, 2))
-//                exit()
-                // add uistring
-            })
+                if (l.ApplyType == 0) { // PvE
+                    level.LevelLimit = l.LevelLimit // required level
+                    level.SkillPoint = l.NeedSkillPoint
+                    level.ApplyType[0] = applyType
+                } else { // PvP
+                    level.ApplyType[1] = applyType
+                }
 
-            // PvP
-            levels.filter(function(l) l.ApplyType == 1 && l.SkillLevel > 0 && l.SkillLevel <= s.MaxLevel).forEach(function(l) {
-                skill.Levels[l.SkillLevel].PvP = {
-                    DelayTime: l.DelayTime,
-                    DecreaseSP: l.DecreaseSP,
-                    SkillExplanationID: l.SkillExplanationID,
-                    SkillExplanationIDParam: l.SkillExplanationIDParam,
+                // add uistring
+                uistringSubset[l.SkillExplanationID] = uistring[l.SkillExplanationID]
+                if (l.SkillExplanationIDParam) {
+                    l.SkillExplanationIDParam.split(",").forEach(function(param) {
+                        if (param.startsWith("{") && param.endsWith("}")) {
+                            var uistringID = param.substring(1, param.length - 1)
+                            uistringSubset[uistringID] = uistring[uistringID]
+                        }
+                    })
                 }
             })
         })
 
-        jsons.push(json)
+        write(job.EnglishName, json)
+        write("uistring_" + job.EnglishName, uistringSubset)
     })
 
-    // setup levels
-    print(JSON.stringify(jsons[jsons.length - 1], null, 2))
-    exit()
+    //================================================
+    // get the map of all jobs
+    //================================================
+    var jobMap = {}
+    jobs.filter(function(job) job.Service).forEach(function(job) {
+        jobMap[job.PrimaryID] = {
+            EnglishName: job.EnglishName,
+            JobNumber: job.JobNumber,
+            JobName: uistring[job.JobName],
+            ParentJob: job.ParentJob,
+        }
+    })
 
-
-
-
-
-    // example of outputting utf8 bytes
-//    out = new java.io.FileOutputStream("D:\\test.txt")
-//    out.write(uistring[85].getBytes("UTF-8"))
-//    out.close()
+    write("jobs", jobMap)
 }
 
-//load("heroku_funcs.js");
+var write = function(path, json) {
+    var out = new java.io.FileOutputStream(JSON_OUTPUT_DIR + path + ".json")
+    out.write(JSON.stringify(json).getBytes("UTF-8"))
+    out.close()
+}
