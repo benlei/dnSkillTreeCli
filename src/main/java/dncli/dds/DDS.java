@@ -118,7 +118,7 @@ public class DDS {
                 // warn if dds has multiple images
                 int maxImages = imageReader.getNumImages(true);
                 if (maxImages > 1 && ! quiet) {
-                    System.out.println(filePath + " has " + maxImages + ", but only first will be extracted.");
+                    System.out.println(filePath + " has " + maxImages + " images, but only the first will be extracted.");
                 }
 
                 // output first image in dds
