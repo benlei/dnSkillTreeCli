@@ -29,6 +29,10 @@ public class DNTParser {
         ret.setMember("cols", cols);
         ret.setMember("entries", entries);
 
+        if (file.length() < 10) {
+            return ret;
+        }
+
         RandomAccessFile randomAccessFile = new RandomAccessFile(file, "r");
         FileChannel fileChannel = randomAccessFile.getChannel();
         ByteBuffer buf = fileChannel.map(FileChannel.MapMode.READ_ONLY, 4, file.length() - 4); // it's already flipped
