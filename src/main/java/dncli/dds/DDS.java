@@ -94,6 +94,12 @@ public class DDS {
     public static void use(CommandLine cli) throws Exception{
         checkUsage(cli);
 
+        System.err.println("DISCLAIMER:");
+        System.err.println("It is more reliable to use ImageMagick to convert DDS files.");
+        System.err.println("This feature is only here to avoid the need to install ImageMagick.");
+        System.err.println("There may be bugs, and if there are please direct them to the original");
+        System.err.println("creator of the API, Niklas Kyster Rasmussen <niklaskr@gmail.com>");
+
         // gets remaining arguments that could not be parsed
         List<String> args = cli.getArgList();
 
