@@ -1,4 +1,18 @@
 //======================================
+// Pak/DNT related extractor/compiler
+//======================================
+// This file requires the following ENV vars to be set in order for it to work:
+// - DN_LEVEL_CAP - The level cap
+// - DN_OUT_DIR - The directory where the JSON files will be written to
+// - UISTRING_PATH - The location of the uistring.xml file
+//======================================
+
+var JSystem = Java.type("java.lang.System")
+var JFile = Java.type("java.io.File")
+var JFileOutputStream = Java.type("java.io.FileOutputStream")
+var JDocumentBuilderFactory = Java.type("javax.xml.parsers.DocumentBuilderFactory")
+
+//======================================
 // Pak object filter
 //======================================
 var regExps = {
@@ -24,9 +38,9 @@ var filter = function(node) {
 //======================================
 // DNT compiling
 //======================================
-var LEVEL_CAP = 80
-var JSON_OUTPUT_DIR = "D:\\json\\" // must include trailing slash
-
+var LEVEL_CAP
+var JSON_OUTPUT_DIR
+var UISTRING_PATH
 var skills = []
 var skillLevels = []
 var jobs = []
@@ -54,12 +68,16 @@ var accumulate = function(entries, cols, file) {
 }
 
 var compile = function() {
+    LEVEL_CAP = parseInt(JSystem.getenv("DN_LEVEL_CAP"))
+    JSON_OUTPUT_DIR = JSystem.getenv("DN_OUT_DIR")
+    UISTRING_PATH = JSystem.getenv("DN_UISTRING_PATH")
+
     //================================================
     // Setup the UI String
     //================================================
     var uistring = []
-    var uistringFile = new java.io.File("D:\\resource\\uistring\\uistring.xml")
-    var document = javax.xml.parsers.DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(uistringFile)
+    var uistringFile = new JFile(UISTRING_PATH)
+    var document = JDocumentBuilderFactory.newInstance().newDocumentBuilder().parse(uistringFile)
     document.getDocumentElement().normalize()
     var nodes = document.getElementsByTagName("message")
     for (var i = 0; i < nodes.getLength(); i++) {
@@ -250,7 +268,7 @@ var compile = function() {
 }
 
 var write = function(path, json) {
-    var out = new java.io.FileOutputStream(new java.io.File(JSON_OUTPUT_DIR, path + ".json"))
+    var out = new JFileOutputStream(new JFile(JSON_OUTPUT_DIR, path + ".json"))
     out.write(JSON.stringify(json).getBytes("UTF-8"))
     out.close()
 }

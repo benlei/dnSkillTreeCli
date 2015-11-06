@@ -1,10 +1,13 @@
-// Nashorn script uses to download paks from web
-var VERSION_FILE = "D:\\Version.cfg"
-var OUTPUT_PATH = "D:\\patches\\" // must have trailing slash
-var VERSION_URL = "http://download2.nexon.net/Game/DragonNest/patch/PatchInfoServer.cfg"
-var DOWNLOAD_URL = "http://download2.nexon.net/Game/DragonNest/patch/%1$08d/Patch%1$08d.pak"
+//======================================
+// Patch Downloader
+//======================================
+// This file requires the following ENV vars to be set in order for it to work:
+// - DN_VERSION_PATH - The path to your Version.cfg
+// - DN_OUT_DIR - The directory where the patches will be downloaded to.
+//======================================
 
 // "import" necessary stuff
+var JSystem = Java.type("java.lang.System")
 var JFile = Java.type("java.io.File")
 var JFiles = Java.type("java.nio.file.Files")
 var JString = Java.type("java.lang.String")
@@ -12,6 +15,12 @@ var JFileOutputStream = Java.type("java.io.FileOutputStream")
 var JURL = Java.type("java.net.URL")
 var JArray = Java.type("byte[]")
 var JStandardCopyOption = Java.type("java.nio.file.StandardCopyOption")
+
+// Nashorn script uses to download paks from web
+var VERSION_FILE = JSystem.getenv("DN_VERSION_PATH")
+var OUTPUT_PATH = JSystem.getenv("DN_OUT_DIR")
+var VERSION_URL = "http://download2.nexon.net/Game/DragonNest/patch/PatchInfoServer.cfg"
+var DOWNLOAD_URL = "http://download2.nexon.net/Game/DragonNest/patch/%1$08d/Patch%1$08d.pak"
 
 // helper functions
 var write = function(path, contents) {
