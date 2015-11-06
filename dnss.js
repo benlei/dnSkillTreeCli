@@ -164,12 +164,14 @@ var compile = function() {
         jobSkills.filter(function(s) jobSkillTreeIDs.indexOf(s.PrimaryID) > -1).forEach(function(s) {
             var levels = skillLevels.filter(function(l) l.SkillIndex == s.PrimaryID)
             var skill = json.Skills[s.PrimaryID]
-            skill.Name = uistring[s.NameID] // generally are not used in description
+            skill.NameID = s.NameID
             skill.MaxLevel = s.MaxLevel
             skill.SPMaxLevel = s.SPMaxLevel
             skill.IconImageIndex = s.IconImageIndex
             skill.SkillType = s.SkillType
             skill.Levels = {}
+
+            uistringSubset[s.NameID] = uistring[s.NameID]
 
             // BaseSkillID is when two skills can't be set at same time
             if (s.BaseSkillID > 0) {
