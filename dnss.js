@@ -247,8 +247,8 @@ var compile = function() {
     write("jobs", jobMap)
 }
 
-var write = function(filena, json) {
-    var out = new java.io.FileOutputStream(java.io.File(JSON_OUTPUT_DIR, path + ".json"))
+var write = function(path, json) {
+    var out = new java.io.FileOutputStream(new java.io.File(JSON_OUTPUT_DIR, path + ".json"))
     out.write(JSON.stringify(json).getBytes("UTF-8"))
     out.close()
 }
