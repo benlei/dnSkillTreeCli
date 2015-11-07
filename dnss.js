@@ -146,6 +146,13 @@ var compile = function() {
             }
         })
 
+        // ensure sizes are always 24
+        if (db.Jobs[job.EnglishName].SkillTree.length < 24) {
+            for (var i = db.Jobs[job.EnglishName].SkillTree.length; i < 24; i++) {
+                db.Jobs[job.EnglishName].SkillTree.push(null)
+            }
+        }
+
         // setup skill levels
         jobSkills.filter(function(s) jobSkillTreeIDs.indexOf(s.PrimaryID) > -1).forEach(function(s) {
             var levels = skillLevels.filter(function(l) l.SkillIndex == s.PrimaryID)
