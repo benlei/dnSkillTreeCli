@@ -102,7 +102,7 @@ var compile = function() {
         job.EnglishName = job.EnglishName.toLowerCase()
 
         // init the db skilltree for this job
-        db.Jobs[job.EnglishName].SkillTree = []
+        db.Jobs[job.EnglishName] = {SkillTree: []}
 
         var json = { EnglishName: job.EnglishName }
 
@@ -229,12 +229,10 @@ var compile = function() {
     // get the map of all jobs
     //================================================
     jobs.filter(function(job) job.Service).forEach(function(job) {
-        db.Jobs[job.EnglishName] = {
-            JobNumber: job.JobNumber,
-            JobName: uistring[job.JobName],
-            IconRow: parseInt(job.JobIcon / 9),
-            IconCol: job.JobIcon % 9,
-        }
+        db.Jobs[job.EnglishName].JobNumber = job.JobNumber
+        db.Jobs[job.EnglishName].JobName: uistring[job.JobName]
+        db.Jobs[job.EnglishName].IconRow: parseInt(job.JobIcon / 9)
+        db.Jobs[job.EnglishName].IconCol: job.JobIcon % 9
 
         if (job.JobNumber == 2) { // can reassign multiple times, not a big deal
             db.SP = [job.MaxSPJob0, job.MaxSPJob1, job.MaxSPJob2]
