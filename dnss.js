@@ -9,6 +9,7 @@
 
 var JSystem = Java.type("java.lang.System")
 var JString = Java.type("java.lang.String")
+var JInteger = Java.type("java.lang.Integer")
 var JFile = Java.type("java.io.File")
 var JFileOutputStream = Java.type("java.io.FileOutputStream")
 var JDocumentBuilderFactory = Java.type("javax.xml.parsers.DocumentBuilderFactory")
@@ -187,7 +188,7 @@ var compile = function() {
             skill.Levels = {}
 
             // sprite stuff
-            skill.Sprite = JString.format("%1$02d", parseInt(s.IconImageIndex / 200) + 1)
+            skill.Sprite = JString.format("%1$02d", new JInteger(parseInt(s.IconImageIndex / 200) + 1))
             skill.IconRow = parseInt((s.IconImageIndex % 200) / 10)
             skill.IconCol = s.IconImageIndex % 10
 
