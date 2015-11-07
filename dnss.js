@@ -88,31 +88,6 @@ var compile = function() {
     }
 
     //================================================
-    // get the player levels
-    //================================================
-    playerLevels = playerLevels.filter(function(p) p.PrimaryID <= LEVEL_CAP).map(function(p) p.SkillPoint)
-    write("levels", playerLevels)
-
-    //================================================
-    // get the weapons
-    //================================================
-    var weaponTypeNameIDs = {}
-    items.filter(function(i) i.NameID == 1000006853 && i.LevelLimit == 1)
-        .reduce(function(p,c) {
-            var find = p.filter(function(_p) _p.NameIDParam == c.NameIDParam)
-            if (find.length == 0) {
-                p.push(c)
-            }
-            return p
-        }, [])
-        .forEach(function(i) {
-            var weapon = weapons.filter(function(w) w.PrimaryID == i.PrimaryID)[0]
-            weaponTypeNameIDs[weapon.EquipType] = uistring[i.NameIDParam.substring(1, i.NameIDParam.length - 1)]
-        })
-
-    write("weapons", weaponTypeNameIDs)
-
-    //================================================
     // generate the job info, skill tree, and skills
     //================================================
     jobs.filter(function(job) job.Service).forEach(function(job) {
@@ -136,12 +111,6 @@ var compile = function() {
                 job0.EnglishName.toLowerCase(),
                 job1.EnglishName.toLowerCase(),
                 job.EnglishName,
-            ]
-
-            json.MaxSPJob = [
-                job.MaxSPJob0,
-                job.MaxSPJob1,
-                job.MaxSPJob2,
             ]
         }
 
@@ -256,9 +225,9 @@ var compile = function() {
     //================================================
     // get the map of all jobs
     //================================================
-    var jobMap = {}
+    var db = {Jobs: {}}
     jobs.filter(function(job) job.Service).forEach(function(job) {
-        jobMap[job.PrimaryID] = {
+        db.Jobs[job.PrimaryID] = {
             EnglishName: job.EnglishName,
             JobNumber: job.JobNumber,
             JobName: uistring[job.JobName],
@@ -266,9 +235,36 @@ var compile = function() {
             IconRow: parseInt(job.JobIcon / 9),
             IconCol: job.JobIcon % 9,
         }
+
+        if (job.JobNumber == 2) { // can reassign multiple times, not a big deal
+            db.SP = [job.MaxSPJob0, job.MaxSPJob1, job.MaxSPJob2]
+        }
     })
 
-    write("jobs", jobMap)
+    //================================================
+    // get the player levels
+    //================================================
+    db.Levels = playerLevels.filter(function(p) p.PrimaryID <= LEVEL_CAP).map(function(p) p.SkillPoint)
+
+    //================================================
+    // get the weapons
+    //================================================
+    var weaponTypeNameIDs = {}
+    items.filter(function(i) i.NameID == 1000006853 && i.LevelLimit == 1)
+        .reduce(function(p,c) {
+            var find = p.filter(function(_p) _p.NameIDParam == c.NameIDParam)
+            if (find.length == 0) {
+                p.push(c)
+            }
+            return p
+        }, [])
+        .forEach(function(i) {
+            var weapon = weapons.filter(function(w) w.PrimaryID == i.PrimaryID)[0]
+            weaponTypeNameIDs[weapon.EquipType] = uistring[i.NameIDParam.substring(1, i.NameIDParam.length - 1)]
+        })
+
+    db.Weapons = weaponTypeNameIDs
+    write("db", db)
 }
 
 var write = function(path, json) {
