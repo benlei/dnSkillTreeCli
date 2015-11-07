@@ -88,21 +88,18 @@ var compile = function() {
     }
 
     // the backend db
-    var db = {Jobs: {}}
+    var db = {Jobs: {}, Lookup: {}}
 
     //================================================
     // generate the job info, skill tree, and skills
     //================================================
     jobs.filter(function(job) job.Service).forEach(function(job) {
-        // subset of the uistring
-        var uistringSubset = {}
-
         // fix a few things
         job.MaxSPJob1 = Number(job.MaxSPJob1.toFixed(3))
         job.EnglishName = job.EnglishName.toLowerCase()
 
         // init the db skilltree for this job
-        db.Jobs[job.EnglishName] = {SkillTree: []}
+        db.Jobs[job.EnglishName] = {SkillTree: [], LookupSet: []}
 
         var json = { EnglishName: job.EnglishName }
 
@@ -110,11 +107,12 @@ var compile = function() {
         if (job.JobNumber == 2) {
             var job1 = jobs.filter(function(j) j.PrimaryID == job.ParentJob)[0]
             var job0 = jobs.filter(function(j) j.PrimaryID == job1.ParentJob)[0]
-            db.Jobs[job.EnglishName].Set = [
+            db.Jobs[job.EnglishName].Line = [
                 job0.EnglishName.toLowerCase(),
                 job1.EnglishName.toLowerCase(),
                 job.EnglishName,
             ]
+
         }
 
 
@@ -163,7 +161,8 @@ var compile = function() {
             skill.IconRow = parseInt((s.IconImageIndex % 200) / 10)
             skill.IconCol = s.IconImageIndex % 10
 
-            uistringSubset[s.NameID] = uistring[s.NameID]
+            db.Lookup[s.NameID] = uistring[s.NameID]
+            db.Jobs[job.EnglishName].LookupSet.push(s.NameID)
 
             // BaseSkillID is when two skills can't be set at same time
             if (s.BaseSkillID > 0) {
@@ -209,12 +208,18 @@ var compile = function() {
                 }
 
                 // add uistring
-                uistringSubset[l.SkillExplanationID] = uistring[l.SkillExplanationID]
+                db.Lookup[l.SkillExplanationID] = uistring[l.SkillExplanationID]
+                if (db.Jobs[job.EnglishName].LookupSet.indexOf(l.SkillExplanationID) == -1) {
+                    db.Jobs[job.EnglishName].LookupSet.push(l.SkillExplanationID)
+                }
                 if (l.SkillExplanationIDParam) {
                     l.SkillExplanationIDParam.split(",").forEach(function(param) {
                         if (param.startsWith("{") && param.endsWith("}")) {
-                            var uistringID = param.substring(1, param.length - 1)
-                            uistringSubset[uistringID] = uistring[uistringID]
+                            var uistringID = parseInt(param.substring(1, param.length - 1))
+                            if (db.Jobs[job.EnglishName].LookupSet.indexOf(uistringID) == -1) {
+                                db.Jobs[job.EnglishName].LookupSet.push(uistringID)
+                            }
+                            db.Lookup[uistringID] = uistring[uistringID]
                         }
                     })
                 }
