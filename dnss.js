@@ -126,7 +126,6 @@ var compile = function() {
         var json = {
             SkillTree: [],
             Skills: {},
-            Lookup: {},
         }
 
         // primary class
