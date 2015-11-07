@@ -87,6 +87,9 @@ var compile = function() {
         uistring[parseInt(e.getAttribute("mid"))] = e.getFirstChild().getData()
     }
 
+    // the backend db
+    var db = {Jobs: {}}
+
     //================================================
     // generate the job info, skill tree, and skills
     //================================================
@@ -98,17 +101,16 @@ var compile = function() {
         job.MaxSPJob1 = Number(job.MaxSPJob1.toFixed(3))
         job.EnglishName = job.EnglishName.toLowerCase()
 
-        var json = {
-            EnglishName: job.EnglishName,
-            SkillTree: [],
-            Skills: {},
-        }
+        // init the db skilltree for this job
+        db.Jobs[job.EnglishName].SkillTree = []
+
+        var json = { EnglishName: job.EnglishName }
 
         // primary class
         if (job.JobNumber == 2) {
             var job1 = jobs.filter(function(j) j.PrimaryID == job.ParentJob)[0]
             var job0 = jobs.filter(function(j) j.PrimaryID == job1.ParentJob)[0]
-            json.Set = [
+            db.Jobs[job.EnglishName].Set = [
                 job0.EnglishName.toLowerCase(),
                 job1.EnglishName.toLowerCase(),
                 job.EnglishName,
@@ -122,14 +124,14 @@ var compile = function() {
         jobSkillTree = skillTree.filter(function(t) jobSkillsID.indexOf(t.SkillTableID) > -1)
         jobSkillTreeIDs = jobSkillTree.map(function(t) t.SkillTableID)
         jobSkillTree.filter(function(t) jobSkillsID.indexOf(t.SkillTableID) > -1).forEach(function(t) {
-            json.SkillTree[t.TreeSlotIndex] = t.SkillTableID
+            db.Jobs[job.EnglishName].SkillTree[t.TreeSlotIndex] = t.SkillTableID
 
             // setup initial Skills with job sp req
-            json.Skills[t.SkillTableID] = {
+            json[t.SkillTableID] = {
                 NeedSP: [t.NeedBasicSP1, t.NeedFirstSP1, t.NeedSecondSP1]
             }
 
-            var skill = json.Skills[t.SkillTableID]
+            var skill = json[t.SkillTableID]
 
             // setup the parent job hash
             if (t.ParentSkillID1 > 0) {
@@ -149,7 +151,7 @@ var compile = function() {
         // setup skill levels
         jobSkills.filter(function(s) jobSkillTreeIDs.indexOf(s.PrimaryID) > -1).forEach(function(s) {
             var levels = skillLevels.filter(function(l) l.SkillIndex == s.PrimaryID)
-            var skill = json.Skills[s.PrimaryID]
+            var skill = json[s.PrimaryID]
             skill.NameID = s.NameID
             skill.MaxLevel = s.MaxLevel
             skill.SPMaxLevel = s.SPMaxLevel
@@ -226,13 +228,10 @@ var compile = function() {
     //================================================
     // get the map of all jobs
     //================================================
-    var db = {Jobs: {}}
     jobs.filter(function(job) job.Service).forEach(function(job) {
-        db.Jobs[job.PrimaryID] = {
-            EnglishName: job.EnglishName,
+        db.Jobs[job.EnglishName] = {
             JobNumber: job.JobNumber,
             JobName: uistring[job.JobName],
-            ParentJob: job.ParentJob,
             IconRow: parseInt(job.JobIcon / 9),
             IconCol: job.JobIcon % 9,
         }
