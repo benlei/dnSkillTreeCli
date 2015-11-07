@@ -88,7 +88,7 @@ var compile = function() {
     }
 
     // the backend db
-    var db = {Jobs: {}, Lookup: {}}
+    var db = {Jobs: [], Lookup: {}}
 
     //================================================
     // generate the job info, skill tree, and skills
@@ -99,20 +99,15 @@ var compile = function() {
         job.EnglishName = job.EnglishName.toLowerCase()
 
         // init the db skilltree for this job
-        db.Jobs[job.EnglishName] = {SkillTree: [], LookupSet: []}
+        db.Jobs[job.PrimaryID] = {EnglishName: job.EnglishName, SkillTree: [], LookupSet: []}
 
-        var json = { EnglishName: job.EnglishName }
+        var json = {JobID: job.PrimaryID}
 
         // primary class
         if (job.JobNumber == 2) {
             var job1 = jobs.filter(function(j) j.PrimaryID == job.ParentJob)[0]
             var job0 = jobs.filter(function(j) j.PrimaryID == job1.ParentJob)[0]
-            db.Jobs[job.EnglishName].Line = [
-                job0.EnglishName.toLowerCase(),
-                job1.EnglishName.toLowerCase(),
-                job.EnglishName,
-            ]
-
+            db.Jobs[job.PrimaryID].Line = [job0.PrimaryID, job1.PrimaryID, job.PrimaryID]
         }
 
 
@@ -122,7 +117,7 @@ var compile = function() {
         jobSkillTree = skillTree.filter(function(t) jobSkillsID.indexOf(t.SkillTableID) > -1)
         jobSkillTreeIDs = jobSkillTree.map(function(t) t.SkillTableID)
         jobSkillTree.filter(function(t) jobSkillsID.indexOf(t.SkillTableID) > -1).forEach(function(t) {
-            db.Jobs[job.EnglishName].SkillTree[t.TreeSlotIndex] = t.SkillTableID
+            db.Jobs[job.PrimaryID].SkillTree[t.TreeSlotIndex] = t.SkillTableID
 
             // setup initial Skills with job sp req
             json[t.SkillTableID] = {
@@ -147,9 +142,9 @@ var compile = function() {
         })
 
         // ensure sizes are always 24
-        if (db.Jobs[job.EnglishName].SkillTree.length < 24) {
-            for (var i = db.Jobs[job.EnglishName].SkillTree.length; i < 24; i++) {
-                db.Jobs[job.EnglishName].SkillTree.push(null)
+        if (db.Jobs[job.PrimaryID].SkillTree.length < 24) {
+            for (var i = db.Jobs[job.PrimaryID].SkillTree.length; i < 24; i++) {
+                db.Jobs[job.PrimaryID].SkillTree.push(null)
             }
         }
 
@@ -169,7 +164,7 @@ var compile = function() {
             skill.IconCol = s.IconImageIndex % 10
 
             db.Lookup[s.NameID] = uistring[s.NameID]
-            db.Jobs[job.EnglishName].LookupSet.push(s.NameID)
+            db.Jobs[job.PrimaryID].LookupSet.push(s.NameID)
 
             // BaseSkillID is when two skills can't be set at same time
             if (s.BaseSkillID > 0) {
@@ -216,15 +211,15 @@ var compile = function() {
 
                 // add uistring
                 db.Lookup[l.SkillExplanationID] = uistring[l.SkillExplanationID]
-                if (db.Jobs[job.EnglishName].LookupSet.indexOf(l.SkillExplanationID) == -1) {
-                    db.Jobs[job.EnglishName].LookupSet.push(l.SkillExplanationID)
+                if (db.Jobs[job.PrimaryID].LookupSet.indexOf(l.SkillExplanationID) == -1) {
+                    db.Jobs[job.PrimaryID].LookupSet.push(l.SkillExplanationID)
                 }
                 if (l.SkillExplanationIDParam) {
                     l.SkillExplanationIDParam.split(",").forEach(function(param) {
                         if (param.startsWith("{") && param.endsWith("}")) {
                             var uistringID = parseInt(param.substring(1, param.length - 1))
-                            if (db.Jobs[job.EnglishName].LookupSet.indexOf(uistringID) == -1) {
-                                db.Jobs[job.EnglishName].LookupSet.push(uistringID)
+                            if (db.Jobs[job.PrimaryID].LookupSet.indexOf(uistringID) == -1) {
+                                db.Jobs[job.PrimaryID].LookupSet.push(uistringID)
                             }
                             db.Lookup[uistringID] = uistring[uistringID]
                         }
@@ -240,10 +235,10 @@ var compile = function() {
     // get the map of all jobs
     //================================================
     jobs.filter(function(job) job.Service).forEach(function(job) {
-        db.Jobs[job.EnglishName].JobNumber = job.JobNumber
-        db.Jobs[job.EnglishName].JobName = uistring[job.JobName]
-        db.Jobs[job.EnglishName].IconRow = parseInt(job.JobIcon / 9)
-        db.Jobs[job.EnglishName].IconCol = job.JobIcon % 9
+        db.Jobs[job.PrimaryID].JobNumber = job.JobNumber
+        db.Jobs[job.PrimaryID].JobName = uistring[job.JobName]
+        db.Jobs[job.PrimaryID].IconRow = parseInt(job.JobIcon / 9)
+        db.Jobs[job.PrimaryID].IconCol = job.JobIcon % 9
 
         if (job.JobNumber == 2) { // can reassign multiple times, not a big deal
             db.SP = [job.MaxSPJob0, job.MaxSPJob1, job.MaxSPJob2]
