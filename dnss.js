@@ -4,7 +4,7 @@
 // This file requires the following ENV vars to be set in order for it to work:
 // - DN_LEVEL_CAP - The level cap
 // - DN_OUT_DIR - The directory where the JSON files will be written to
-// - UISTRING_PATH - The location of the uistring.xml file
+// - DN_UISTRING_PATH - The location of the uistring.xml file
 //======================================
 
 var JSystem = Java.type("java.lang.System")
