@@ -99,6 +99,7 @@ var compile = function() {
         job.EnglishName = job.EnglishName.toLowerCase()
 
         var json = {
+            EnglishName: job.EnglishName,
             SkillTree: [],
             Skills: {},
         }
