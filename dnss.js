@@ -106,8 +106,7 @@ var compile = function() {
         // primary class
         if (job.JobNumber == 2) {
             var job1 = jobs.filter(function(j) j.PrimaryID == job.ParentJob)[0]
-            var job0 = jobs.filter(function(j) j.PrimaryID == job1.ParentJob)[0]
-            db.Jobs[job.PrimaryID].Line = [job0.PrimaryID, job1.PrimaryID, job.PrimaryID]
+            db.Jobs[job.PrimaryID].Line = [job1.ParentJob, job.ParentJob, job.PrimaryID]
         }
 
 
@@ -235,6 +234,7 @@ var compile = function() {
     // get the map of all jobs
     //================================================
     jobs.filter(function(job) job.Service).forEach(function(job) {
+        db.Jobs[job.PrimaryID].ParentJob = job.ParentJob
         db.Jobs[job.PrimaryID].JobNumber = job.JobNumber
         db.Jobs[job.PrimaryID].JobName = uistring[job.JobName]
         db.Jobs[job.PrimaryID].IconRow = parseInt(job.JobIcon / 9)
