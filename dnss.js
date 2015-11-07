@@ -227,7 +227,6 @@ var compile = function() {
         })
 
         write(job.EnglishName, json)
-        write("uistring_" + job.EnglishName, uistringSubset)
     })
 
     //================================================
