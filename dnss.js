@@ -8,6 +8,7 @@
 //======================================
 
 var JSystem = Java.type("java.lang.System")
+var JString = Java.type("java.lang.String")
 var JFile = Java.type("java.io.File")
 var JFileOutputStream = Java.type("java.io.FileOutputStream")
 var JDocumentBuilderFactory = Java.type("javax.xml.parsers.DocumentBuilderFactory")
@@ -122,9 +123,6 @@ var compile = function() {
         job.EnglishName = job.EnglishName.toLowerCase()
 
         var json = {
-            EnglishName: job.EnglishName,
-            JobName: uistring[job.JobName],
-            JobIcon: job.JobIcon,
             SkillTree: [],
             Skills: {},
             Lookup: {},
@@ -185,9 +183,13 @@ var compile = function() {
             skill.NameID = s.NameID
             skill.MaxLevel = s.MaxLevel
             skill.SPMaxLevel = s.SPMaxLevel
-            skill.IconImageIndex = s.IconImageIndex
             skill.SkillType = s.SkillType
             skill.Levels = {}
+
+            // sprite stuff
+            skill.Sprite = JString.format("%1$02d", parseInt(s.IconImageIndex / 200) + 1)
+            skill.IconRow = parseInt((s.IconImageIndex % 200) / 10)
+            skill.IconCol = s.IconImageIndex % 10
 
             uistringSubset[s.NameID] = uistring[s.NameID]
 
@@ -261,6 +263,8 @@ var compile = function() {
             JobNumber: job.JobNumber,
             JobName: uistring[job.JobName],
             ParentJob: job.ParentJob,
+            IconRow: parseInt(job.JobIcon / 9),
+            IconCol: job.JobIcon % 9,
         }
     })
 
