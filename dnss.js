@@ -230,9 +230,9 @@ var compile = function() {
     //================================================
     jobs.filter(function(job) job.Service).forEach(function(job) {
         db.Jobs[job.EnglishName].JobNumber = job.JobNumber
-        db.Jobs[job.EnglishName].JobName: uistring[job.JobName]
-        db.Jobs[job.EnglishName].IconRow: parseInt(job.JobIcon / 9)
-        db.Jobs[job.EnglishName].IconCol: job.JobIcon % 9
+        db.Jobs[job.EnglishName].JobName = uistring[job.JobName]
+        db.Jobs[job.EnglishName].IconRow = parseInt(job.JobIcon / 9)
+        db.Jobs[job.EnglishName].IconCol = job.JobIcon % 9
 
         if (job.JobNumber == 2) { // can reassign multiple times, not a big deal
             db.SP = [job.MaxSPJob0, job.MaxSPJob1, job.MaxSPJob2]
