@@ -147,7 +147,7 @@ var compile = function() {
             }
 
             var newSkillTree = []
-            for (var i = 0; i < db.Jobs[job.PrimaryID].SkillTree; i += 4) {
+            for (var i = 0; i < db.Jobs[job.PrimaryID].SkillTree.length; i += 4) {
                 newSkillTree.push(array.slice(i, i + 4))
             }
 
