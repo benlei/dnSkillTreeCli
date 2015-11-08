@@ -88,7 +88,7 @@ var compile = function() {
     }
 
     // the backend db
-    var db = {Jobs: [], Lookup: {}}
+    var db = {Jobs: {}, Lookup: {}, JobTree: []}
 
     //================================================
     // generate the job info, skill tree, and skills
@@ -245,10 +245,12 @@ var compile = function() {
         }
     })
 
+
     //================================================
     // get the player levels
     //================================================
     db.Levels = playerLevels.filter(function(p) p.PrimaryID <= LEVEL_CAP).map(function(p) p.SkillPoint)
+
 
     //================================================
     // get the weapons
@@ -268,6 +270,27 @@ var compile = function() {
         })
 
     db.Weapons = weaponTypeNameIDs
+
+
+    //================================================
+    // setup the job tree
+    //================================================
+    jobs.filter(function(job) job.Service && job.JobNumber == 0).forEach(function(job) {
+        db.JobTree.push({ID: job.PrimaryID, Advancements: []})
+    });
+
+    jobs.filter(function(job) job.Service && job.JobNumber == 1).forEach(function(job) {
+        db.JobTree.filter(function(j) j.ID == job.ParentJob})[0].Advancements.push({ID: job.PrimaryID, Advancements: []})
+    });
+
+
+    jobs.filter(function(job) job.Service && job.JobNumber == 2).forEach(function(job) {
+        db.JobTree.forEach(function(j) {
+            var adv = j.Advancements.filter(function(j2) j2.ID == job.ParentJob)
+             adv[0] && adv[0].Advancements.push({ID: job.PrimaryID, Advancements: []})
+        })
+    });
+
     write("db", db)
 }
 
