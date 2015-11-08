@@ -154,11 +154,11 @@ var compile = function() {
             skill.Levels = {}
 
             // sprite stuff
-            skill.Sprite = JString.format("%1$02d", new JInteger(parseInt(s.IconImageIndex / 200) + 1))
+            skill.Sprite = JString.format("%1$02d", int(s.IconImageIndex / 200) + 1)
             skill.IconRow = parseInt((s.IconImageIndex % 200) / 10)
             skill.IconCol = s.IconImageIndex % 10
 
-            lookup.add(new JInteger(s.NameID))
+            lookup.add(int(s.NameID))
             db.Jobs[job.PrimaryID].LookupSet.push(s.NameID)
 
             // BaseSkillID is when two skills can't be set at same time
@@ -205,7 +205,7 @@ var compile = function() {
                 }
 
                 // add uistring
-                lookup.add(new JInteger(l.SkillExplanationID))
+                lookup.add(int(l.SkillExplanationID))
                 if (db.Jobs[job.PrimaryID].LookupSet.indexOf(l.SkillExplanationID) == -1) {
                     db.Jobs[job.PrimaryID].LookupSet.push(l.SkillExplanationID)
                 }
@@ -216,7 +216,7 @@ var compile = function() {
                             if (db.Jobs[job.PrimaryID].LookupSet.indexOf(uistringID) == -1) {
                                 db.Jobs[job.PrimaryID].LookupSet.push(uistringID)
                             }
-                            lookup.add(new JInteger(uistringID))
+                            lookup.add(int(uistringID))
                         }
                     })
                 }
@@ -263,7 +263,7 @@ var compile = function() {
         .forEach(function(i) {
             var weapon = weapons.filter(function(w) w.PrimaryID == i.PrimaryID)[0]
             weaponTypeNameIDs[weapon.EquipType] = i.NameIDParam.substring(1, i.NameIDParam.length - 1)
-            lookup.add(new JInteger(weaponTypeNameIDs[weapon.EquipType]))
+            lookup.add(int(weaponTypeNameIDs[weapon.EquipType]))
         })
 
     db.Weapons = weaponTypeNameIDs
@@ -298,13 +298,15 @@ var compile = function() {
     var nodesLength = nodes.getLength()
     for (var i = 0; i < nodesLength; i++) {
         var e = nodes.item(i)
-        var mid = new JInteger(parseInt(e.getAttribute("mid")))
+        var mid = int(e.getAttribute("mid"))
         if (lookup.contains(mid)) {
             db.Lookup[mid] = e.getFirstChild().getData()
         }
     }
     write("db", db)
 }
+
+var int = function($) new JInteger(parseInt($))
 
 var write = function(path, json) {
     var out = new JFileOutputStream(new JFile(JSON_OUTPUT_DIR, path + ".json"))
