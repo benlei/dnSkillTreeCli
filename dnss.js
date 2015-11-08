@@ -145,6 +145,13 @@ var compile = function() {
             for (var i = db.Jobs[job.PrimaryID].SkillTree.length; i < 24; i++) {
                 db.Jobs[job.PrimaryID].SkillTree.push(null)
             }
+
+            var newSkillTree = []
+            for (var i = 0; i < db.Jobs[job.PrimaryID].SkillTree; i += 4) {
+                newSkillTree.push(array.slice(i, i + 4));
+            }
+
+            db.Jobs[job.PrimaryID].SkillTree = newSkillTree
         }
 
         // setup skill levels
