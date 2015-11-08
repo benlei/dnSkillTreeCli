@@ -158,7 +158,7 @@ var compile = function() {
             skill.IconRow = parseInt((s.IconImageIndex % 200) / 10)
             skill.IconCol = s.IconImageIndex % 10
 
-            lookup.add(s.NameID)
+            lookup.add(new JInteger(s.NameID))
             db.Jobs[job.PrimaryID].LookupSet.push(s.NameID)
 
             // BaseSkillID is when two skills can't be set at same time
@@ -205,7 +205,7 @@ var compile = function() {
                 }
 
                 // add uistring
-                lookup.add(l.SkillExplanationID)
+                lookup.add(new JInteger(l.SkillExplanationID))
                 if (db.Jobs[job.PrimaryID].LookupSet.indexOf(l.SkillExplanationID) == -1) {
                     db.Jobs[job.PrimaryID].LookupSet.push(l.SkillExplanationID)
                 }
@@ -216,7 +216,7 @@ var compile = function() {
                             if (db.Jobs[job.PrimaryID].LookupSet.indexOf(uistringID) == -1) {
                                 db.Jobs[job.PrimaryID].LookupSet.push(uistringID)
                             }
-                            lookup.add(uistringID)
+                            lookup.add(new JInteger(uistringID))
                         }
                     })
                 }
@@ -263,7 +263,7 @@ var compile = function() {
         .forEach(function(i) {
             var weapon = weapons.filter(function(w) w.PrimaryID == i.PrimaryID)[0]
             weaponTypeNameIDs[weapon.EquipType] = i.NameIDParam.substring(1, i.NameIDParam.length - 1)
-            lookup.add(weaponTypeNameIDs[weapon.EquipType])
+            lookup.add(new JInteger(weaponTypeNameIDs[weapon.EquipType]))
         })
 
     db.Weapons = weaponTypeNameIDs
@@ -298,7 +298,7 @@ var compile = function() {
     var nodesLength = nodes.getLength()
     for (var i = 0; i < nodesLength; i++) {
         var e = nodes.item(i)
-        var mid = parseInt(e.getAttribute("mid"))
+        var mid = new JInteger(parseInt(e.getAttribute("mid")))
         if (lookup.contains(mid)) {
             db.Lookup[mid] = e.getFirstChild().getData()
         }
