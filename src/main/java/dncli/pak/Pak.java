@@ -88,7 +88,8 @@ public class Pak {
         int numArgs = cli.getArgList().size();
         if (!(isInfo ^ isExtract ^ isCompress) ||
                 !isInfo & isList ||
-                (numArgs == 0) | isQuiet | isForce & isInfo ||
+                (numArgs == 0) | isForce & isInfo ||
+                isQuiet & isCompress ||
                 hasFilter & !isExtract ||
                 isCompress & (numArgs != 2) ||
                 !isCompress & hasMin ||
