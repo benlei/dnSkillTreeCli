@@ -1,3 +1,28 @@
+/*
+ * DDS.java - This file is part of DNCLI
+ *
+ * Copyright (C) 2015 Benjamin Lei. All rights reserved.
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+ *
+ * This code is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This code is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+ * version 2 for more details (a copy is included in the LICENSE file that
+ * accompanied this code).
+ *
+ * You should have received a copy of the GNU General Public License version
+ * 2 along with this work; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ * FILE DESCRIPTION:
+ * Class that takes in CLI options to convert DDS files (using the Java DDS ImageIO
+ * Plugin by Niklas Kyster Rasmussen) into JPG or PNG image formats.
+ */
 package dncli.dds;
 
 import dncli.utils.OsUtils;
@@ -13,9 +38,6 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.List;
 
-/**
- * Created by Benjamin Lei on 10/29/2015.
- */
 public class DDS {
     public final static Options options = new Options();
     static {

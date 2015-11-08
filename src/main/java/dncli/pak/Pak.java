@@ -1,3 +1,29 @@
+/*
+ * Pak.java - This file is part of DNCLI
+ *
+ * Copyright (C) 2015 Benjamin Lei. All rights reserved.
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+ *
+ * This code is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This code is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+ * version 2 for more details (a copy is included in the LICENSE file that
+ * accompanied this code).
+ *
+ * You should have received a copy of the GNU General Public License version
+ * 2 along with this work; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ * FILE DESCRIPTION:
+ * Class that takes in CLI arguments to extract a Pak archive (can filter using
+ * a JavaScript file (written for Nashorn)), compress a directory into
+ * a Pak archive, or list meta data/files in a Pak archive.
+ */
 package dncli.pak;
 
 import dncli.utils.JSUtils;
