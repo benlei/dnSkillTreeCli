@@ -11,6 +11,7 @@ var JSystem = Java.type("java.lang.System")
 var JString = Java.type("java.lang.String")
 var JInteger = Java.type("java.lang.Integer")
 var JFile = Java.type("java.io.File")
+var JHashSet = Java.type("java.util.HashSet")
 var JFileOutputStream = Java.type("java.io.FileOutputStream")
 var JDocumentBuilderFactory = Java.type("javax.xml.parsers.DocumentBuilderFactory")
 
@@ -74,21 +75,8 @@ var compile = function() {
     JSON_OUTPUT_DIR = JSystem.getenv("DN_OUT_DIR")
     UISTRING_PATH = JSystem.getenv("DN_UISTRING_PATH")
 
-    //================================================
-    // Setup the UI String
-    //================================================
-    var uistring = []
-    var uistringFile = new JFile(UISTRING_PATH)
-    var document = JDocumentBuilderFactory.newInstance().newDocumentBuilder().parse(uistringFile)
-    document.getDocumentElement().normalize()
-    var nodes = document.getElementsByTagName("message")
-    for (var i = 0; i < nodes.getLength(); i++) {
-        var e = nodes.item(i)
-        uistring[parseInt(e.getAttribute("mid"))] = e.getFirstChild().getData()
-    }
-
     // the backend db
-    var db = {Jobs: {}, Lookup: [], JobTree: []}
+    var db = {Jobs: {}, Lookup: new JHashSet(), JobTree: []}
 
     //================================================
     // generate the job info, skill tree, and skills
@@ -169,7 +157,7 @@ var compile = function() {
             skill.IconRow = parseInt((s.IconImageIndex % 200) / 10)
             skill.IconCol = s.IconImageIndex % 10
 
-            db.Lookup.push(s.NameID)
+            db.Lookup.add(s.NameID)
             db.Jobs[job.PrimaryID].LookupSet.push(s.NameID)
 
             // BaseSkillID is when two skills can't be set at same time
@@ -216,7 +204,7 @@ var compile = function() {
                 }
 
                 // add uistring
-                db.Lookup.push(l.SkillExplanationID)
+                db.Lookup.add(l.SkillExplanationID)
                 if (db.Jobs[job.PrimaryID].LookupSet.indexOf(l.SkillExplanationID) == -1) {
                     db.Jobs[job.PrimaryID].LookupSet.push(l.SkillExplanationID)
                 }
@@ -227,7 +215,7 @@ var compile = function() {
                             if (db.Jobs[job.PrimaryID].LookupSet.indexOf(uistringID) == -1) {
                                 db.Jobs[job.PrimaryID].LookupSet.push(uistringID)
                             }
-                            db.Lookup.push(uistringID)
+                            db.Lookup.add(uistringID)
                         }
                     })
                 }
@@ -243,7 +231,7 @@ var compile = function() {
     jobs.filter(function(job) job.Service).forEach(function(job) {
         db.Jobs[job.PrimaryID].ParentJob = job.ParentJob
         db.Jobs[job.PrimaryID].JobNumber = job.JobNumber
-        db.Jobs[job.PrimaryID].JobName = uistring[job.JobName]
+        db.Jobs[job.PrimaryID].JobName = job.JobName
         db.Jobs[job.PrimaryID].IconRow = parseInt(job.JobIcon / 9)
         db.Jobs[job.PrimaryID].IconCol = job.JobIcon % 9
 
@@ -298,14 +286,24 @@ var compile = function() {
         })
     });
 
-    for (i in uistring) {
-        if (db.Lookup.indexOf(i) == -1) {
-            delete uistring[i]
+    //================================================
+    // Setup the UI String
+    //================================================
+    var uistring = []
+    var uistringFile = new JFile(UISTRING_PATH)
+    var document = JDocumentBuilderFactory.newInstance().newDocumentBuilder().parse(uistringFile)
+    document.getDocumentElement().normalize()
+    var nodes = document.getElementsByTagName("message")
+    var nodesLength = nodes.getLength()
+    for (var i = 0; i < nodesLength; i++) {
+        var e = nodes.item(i)
+        var mid = parseInt(e.getAttribute("mid"))
+        if (db.Lookup.contains(mid)) {}
+            uistring[mid] = e.getFirstChild().getData()
         }
     }
 
     db.Lookup = uistring
-
     write("db", db)
 }
 
