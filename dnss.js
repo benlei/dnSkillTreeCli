@@ -165,6 +165,12 @@ var compile = function() {
                 skill.SkillGroup = s.SkillGroup
             }
 
+            if (s.BaseSkillID > 0) {
+                skill.BaseSkillID = s.BaseSkillID
+            }
+
+
+
             // weapons can be uncommon + order doesn't matter
             if (s.NeedWeaponType1 > -1 || s.NeedWeaponType2 > -1) {
                 skill.NeedWeaponType = []
