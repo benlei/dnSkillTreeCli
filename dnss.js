@@ -76,7 +76,8 @@ var compile = function() {
     UISTRING_PATH = JSystem.getenv("DN_UISTRING_PATH")
 
     // the backend db
-    var db = {Jobs: {}, Lookup: new JHashSet(), JobTree: []}
+    var db = {Jobs: {}, Lookup: {}, JobTree: []}
+    var lookup = new JHashSet()
 
     //================================================
     // generate the job info, skill tree, and skills
@@ -157,7 +158,7 @@ var compile = function() {
             skill.IconRow = parseInt((s.IconImageIndex % 200) / 10)
             skill.IconCol = s.IconImageIndex % 10
 
-            db.Lookup.add(s.NameID)
+            lookup.add(s.NameID)
             db.Jobs[job.PrimaryID].LookupSet.push(s.NameID)
 
             // BaseSkillID is when two skills can't be set at same time
@@ -204,7 +205,7 @@ var compile = function() {
                 }
 
                 // add uistring
-                db.Lookup.add(l.SkillExplanationID)
+                lookup.add(l.SkillExplanationID)
                 if (db.Jobs[job.PrimaryID].LookupSet.indexOf(l.SkillExplanationID) == -1) {
                     db.Jobs[job.PrimaryID].LookupSet.push(l.SkillExplanationID)
                 }
@@ -215,7 +216,7 @@ var compile = function() {
                             if (db.Jobs[job.PrimaryID].LookupSet.indexOf(uistringID) == -1) {
                                 db.Jobs[job.PrimaryID].LookupSet.push(uistringID)
                             }
-                            db.Lookup.add(uistringID)
+                            lookup.add(uistringID)
                         }
                     })
                 }
@@ -262,7 +263,7 @@ var compile = function() {
         .forEach(function(i) {
             var weapon = weapons.filter(function(w) w.PrimaryID == i.PrimaryID)[0]
             weaponTypeNameIDs[weapon.EquipType] = i.NameIDParam.substring(1, i.NameIDParam.length - 1)
-            db.Lookup.add(weaponTypeNameIDs[weapon.EquipType])
+            lookup.add(weaponTypeNameIDs[weapon.EquipType])
         })
 
     db.Weapons = weaponTypeNameIDs
@@ -290,7 +291,6 @@ var compile = function() {
     //================================================
     // Setup the UI String
     //================================================
-    var uistring = {}
     var uistringFile = new JFile(UISTRING_PATH)
     var document = JDocumentBuilderFactory.newInstance().newDocumentBuilder().parse(uistringFile)
     document.getDocumentElement().normalize()
@@ -299,12 +299,10 @@ var compile = function() {
     for (var i = 0; i < nodesLength; i++) {
         var e = nodes.item(i)
         var mid = parseInt(e.getAttribute("mid"))
-        if (db.Lookup.contains(mid)) {
-            uistring[mid] = e.getFirstChild().getData()
+        if (lookup.contains(mid)) {
+            db.Lookup[mid] = e.getFirstChild().getData()
         }
     }
-
-    db.Lookup = uistring
     write("db", db)
 }
 
