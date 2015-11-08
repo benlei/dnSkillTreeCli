@@ -261,7 +261,8 @@ var compile = function() {
         }, [])
         .forEach(function(i) {
             var weapon = weapons.filter(function(w) w.PrimaryID == i.PrimaryID)[0]
-            weaponTypeNameIDs[weapon.EquipType] = uistring[i.NameIDParam.substring(1, i.NameIDParam.length - 1)]
+            weaponTypeNameIDs[weapon.EquipType] = i.NameIDParam.substring(1, i.NameIDParam.length - 1)
+            db.Lookup.add(weaponTypeNameIDs[weapon.EquipType])
         })
 
     db.Weapons = weaponTypeNameIDs
@@ -289,7 +290,7 @@ var compile = function() {
     //================================================
     // Setup the UI String
     //================================================
-    var uistring = []
+    var uistring = {}
     var uistringFile = new JFile(UISTRING_PATH)
     var document = JDocumentBuilderFactory.newInstance().newDocumentBuilder().parse(uistringFile)
     document.getDocumentElement().normalize()
@@ -298,7 +299,7 @@ var compile = function() {
     for (var i = 0; i < nodesLength; i++) {
         var e = nodes.item(i)
         var mid = parseInt(e.getAttribute("mid"))
-        if (db.Lookup.contains(mid)) {}
+        if (db.Lookup.contains(mid)) {
             uistring[mid] = e.getFirstChild().getData()
         }
     }
