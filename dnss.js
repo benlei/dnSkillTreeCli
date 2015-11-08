@@ -161,9 +161,8 @@ var compile = function() {
             lookup.add(int(s.NameID))
             db.Jobs[job.PrimaryID].LookupSet.push(s.NameID)
 
-            // BaseSkillID is when two skills can't be set at same time
-            if (s.BaseSkillID > 0) {
-                skill.BaseSkillID = s.BaseSkillID
+            if (s.SkillGroup > 0) {
+                skill.SkillGroup = s.SkillGroup
             }
 
             // weapons can be uncommon + order doesn't matter
