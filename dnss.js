@@ -287,7 +287,7 @@ var compile = function() {
     jobs.filter(function(job) job.Service && job.JobNumber == 2).forEach(function(job) {
         db.JobTree.forEach(function(j) {
             var adv = j.Advancements.filter(function(j2) j2.ID == job.ParentJob)
-             adv[0] && adv[0].Advancements.push({ID: job.PrimaryID, Advancements: []})
+             adv[0] && adv[0].Advancements.push({ID: job.PrimaryID})
         })
     });
 
