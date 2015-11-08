@@ -145,14 +145,14 @@ var compile = function() {
             for (var i = db.Jobs[job.PrimaryID].SkillTree.length; i < 24; i++) {
                 db.Jobs[job.PrimaryID].SkillTree.push(null)
             }
-
-            var newSkillTree = []
-            for (var i = 0; i < db.Jobs[job.PrimaryID].SkillTree.length; i += 4) {
-                newSkillTree.push(db.Jobs[job.PrimaryID].SkillTree.slice(i, i + 4))
-            }
-
-            db.Jobs[job.PrimaryID].SkillTree = newSkillTree
         }
+
+        var newSkillTree = []
+        for (var i = 0; i < db.Jobs[job.PrimaryID].SkillTree.length; i += 4) {
+            newSkillTree.push(db.Jobs[job.PrimaryID].SkillTree.slice(i, i + 4))
+        }
+
+        db.Jobs[job.PrimaryID].SkillTree = newSkillTree
 
         // setup skill levels
         jobSkills.filter(function(s) jobSkillTreeIDs.indexOf(s.PrimaryID) > -1).forEach(function(s) {
