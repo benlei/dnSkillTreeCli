@@ -154,7 +154,7 @@ var compile = function() {
             skill.Levels = {}
 
             // sprite stuff
-            skill.Sprite = JString.format("%1$02d", int(s.IconImageIndex / 200) + 1)
+            skill.Sprite = JString.format("%1$02d", int((s.IconImageIndex / 200) + 1)
             skill.IconRow = parseInt((s.IconImageIndex % 200) / 10)
             skill.IconCol = s.IconImageIndex % 10
 
