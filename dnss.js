@@ -236,6 +236,7 @@ var compile = function() {
         db.Jobs[job.PrimaryID].IconRow = parseInt(job.JobIcon / 9)
         db.Jobs[job.PrimaryID].IconCol = job.JobIcon % 9
 
+        lookup.add(int(job.JobName))
         if (job.JobNumber == 2) { // can reassign multiple times, not a big deal
             db.SP = [job.MaxSPJob0, job.MaxSPJob1, job.MaxSPJob2]
         }
