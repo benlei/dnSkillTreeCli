@@ -324,9 +324,9 @@ var compile = function() {
             var json = {Skills: {}, Lookup: {}, Weapons: {}}
             var parentJob = db.Jobs[job.ParentJob]
             var baseJob = db.Jobs[parentJob.ParentJob]
-            for (job in [baseJob, parentJob, job]) {
+            for (j in [baseJob, parentJob, job]) {
                 for (skillID in job.Skills) {
-                    var skill = job.Skills[skillID]
+                    var skill = j.Skills[skillID]
                     json[skillID] = skill
                     if (skill.NeedWeaponType) {
                         for (weapType in skill.NeedWeaponType) {
@@ -335,8 +335,8 @@ var compile = function() {
                     }
                 }
 
-                for (l in job.LookupSet) {
-                    json.Lookup[job.LookupSet[l]] = db.Lookup[job.LookupSet[l]]
+                for (l in j.LookupSet) {
+                    json.Lookup[j.LookupSet[l]] = db.Lookup[j.LookupSet[l]]
                 }
             }
 
