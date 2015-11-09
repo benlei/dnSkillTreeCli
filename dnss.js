@@ -326,17 +326,17 @@ var compile = function() {
             var baseJob = db.Jobs[parentJob.ParentJob]
             for (job in [baseJob, parentJob, job]) {
                 for (skillID in job.Skills) {
-                    json[skillID] = job.Skills[skillID]
+                    var skill = job.Skills[skillID]
+                    json[skillID] = skill
+                    if (skill.NeedWeaponType) {
+                        for (weapType in skill.NeedWeaponType) {
+                            json.Weapons[weapType] = db.Weapons[weapType]
+                        }
+                    }
                 }
 
                 for (l in job.LookupSet) {
                     json.Lookup[job.LookupSet[l]] = db.Lookup[job.LookupSet[l]]
-                }
-
-                if (skill.NeedWeaponType) {
-                    for (weapType in skill.NeedWeaponType) {
-                        json.Weapons[weapType] = db.Weapons[weapType]
-                    }
                 }
             }
 
