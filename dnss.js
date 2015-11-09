@@ -88,17 +88,10 @@ var compile = function() {
         job.EnglishName = job.EnglishName.toLowerCase()
 
         // init the db skilltree for this job
-        db.Jobs[job.PrimaryID] = {EnglishName: job.EnglishName, SkillTree: [], LookupSet: []}
+        db.Jobs[job.PrimaryID] = {EnglishName: job.EnglishName, SkillTree: [], Skills: {}, LookupSet: []}
 
-        var json = {JobID: job.PrimaryID}
-
-        // primary class
-        if (job.JobNumber == 2) {
-            var job1 = jobs.filter(function(j) j.PrimaryID == job.ParentJob)[0]
-            db.Jobs[job.PrimaryID].ParentJob = job.ParentJob
-            db.Jobs[job.PrimaryID].BaseJob = job1.ParentJob
-        }
-
+        db.Jobs[job.PrimaryID].ParentJob = job.ParentJob
+        db.Jobs[job.PrimaryID].JobNumber = job.JobNumber
 
         // setup skill table
         jobSkills = skills.filter(function(s) s.NeedJob == job.PrimaryID)
@@ -109,11 +102,11 @@ var compile = function() {
             db.Jobs[job.PrimaryID].SkillTree[t.TreeSlotIndex] = t.SkillTableID
 
             // setup initial Skills with job sp req
-            json[t.SkillTableID] = {
+            db.Jobs[job.PrimaryID].Skills[t.SkillTableID] = {
                 NeedSP: [t.NeedBasicSP1, t.NeedFirstSP1, t.NeedSecondSP1]
             }
 
-            var skill = json[t.SkillTableID]
+            var skill = db.Jobs[job.PrimaryID].Skills[t.SkillTableID]
 
             // setup the parent job hash
             if (t.ParentSkillID1 > 0) {
@@ -147,7 +140,7 @@ var compile = function() {
         // setup skill levels
         jobSkills.filter(function(s) jobSkillTreeIDs.indexOf(s.PrimaryID) > -1).forEach(function(s) {
             var levels = skillLevels.filter(function(l) l.SkillIndex == s.PrimaryID)
-            var skill = json[s.PrimaryID]
+            var skill = db.Jobs[job.PrimaryID].Skills[s.PrimaryID]
             skill.NameID = s.NameID
             skill.MaxLevel = s.MaxLevel
             skill.SPMaxLevel = s.SPMaxLevel
@@ -169,8 +162,6 @@ var compile = function() {
             if (s.BaseSkillID > 0) {
                 skill.BaseSkillID = s.BaseSkillID
             }
-
-
 
             // weapons can be uncommon + order doesn't matter
             if (s.NeedWeaponType1 > -1 || s.NeedWeaponType2 > -1) {
@@ -228,12 +219,10 @@ var compile = function() {
                 }
             })
         })
-
-        write(job.EnglishName, json)
     })
 
     //================================================
-    // get the map of all jobs
+    // further setup the jobs
     //================================================
     jobs.filter(function(job) job.Service).forEach(function(job) {
         db.Jobs[job.PrimaryID].ParentJob = job.ParentJob
@@ -310,6 +299,59 @@ var compile = function() {
             db.Lookup[mid] = e.getFirstChild().getData()
         }
     }
+
+
+    //================================================
+    // Translate the job names
+    //================================================
+    for (jobID in db.Jobs) {
+        db.Jobs[jobID].JobName = db.Lookup[db.Jobs[jobID].JobName]
+    }
+
+    //================================================
+    // Translate the weapon names
+    //================================================
+    for (weapType in db.Weapons) {
+        db.Weapons[weapType] = db.Lookup[db.Weapons[weapType]]
+    }
+
+    //================================================
+    // Setup skills for every 2nd class
+    //================================================
+    for (jobID in db.Jobs) {
+        var job = db.Jobs[jobID]
+        if (job.JobNumber == 2) {
+            var json = {Skills: {}, Lookup: {}, Weapons: {}}
+            var parentJob = db.Jobs[job.ParentJob]
+            var baseJob = db.Jobs[parentJob.ParentJob]
+            for (job in [baseJob, parentJob, job]) {
+                for (skillID in job.Skills) {
+                    json[skillID] = job.Skills[skillID]
+                }
+
+                for (l in job.LookupSet) {
+                    json.Lookup[job.LookupSet[l]] = db.Lookup[job.LookupSet[l]]
+                }
+
+                if (skill.NeedWeaponType) {
+                    for (weapType in skill.NeedWeaponType) {
+                        json.Weapons[weapType] = db.Weapons[weapType]
+                    }
+                }
+            }
+
+            write(job.EnglishName, json)
+        }
+    }
+
+    delete db.Lookup
+    delete db.Weapons
+
+    for (jobID in db.Jobs) {
+        delete db.Jobs[jobID].LookupSet
+    }
+
+
     write("db", db)
 }
 
