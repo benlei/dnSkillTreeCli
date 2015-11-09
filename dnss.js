@@ -102,7 +102,7 @@ var compile = function() {
         // add name lookup set
         lookup.add(int(job.JobName))
 
-        if (job.JobNumber == 2 && ! db.SP) {
+        if (job.JobNumber == 2 && db.SP.length == 0) {
             db.SP = [job.MaxSPJob0, job.MaxSPJob1, job.MaxSPJob2]
         }
 
