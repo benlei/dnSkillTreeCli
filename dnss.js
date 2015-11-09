@@ -79,15 +79,14 @@ var compile = function() {
     var db = {Jobs: {}, Lookup: {}, SP: [], Weapons: {}}
     var lookup = new JHashSet()
 
-    //================================================
-    // generate the job info, skill tree, and skills
-    //================================================
     jobs.filter(function(job) job.Service).forEach(function(job) {
         // fix a few things
         job.MaxSPJob1 = Number(job.MaxSPJob1.toFixed(3))
         job.EnglishName = job.EnglishName.toLowerCase()
 
-        // init the job in the db
+        //================================================
+        // SETUP JOB WITH PRIMARY ID
+        //================================================
         db.Jobs[job.PrimaryID] = {
             EnglishName: job.EnglishName,
             ParentJob: job.ParentJob,
@@ -108,7 +107,7 @@ var compile = function() {
         }
 
         //================================================
-        // START SETUP SKILLTREE
+        // SETUP SKILLTREE
         //================================================
         jobSkills = skills.filter(function(s) s.NeedJob == job.PrimaryID)
         jobSkillsID = jobSkills.map(function(s) s.PrimaryID)
@@ -148,7 +147,7 @@ var compile = function() {
 
 
         //================================================
-        // START SETUP SKILLEVELS
+        // SETUP SKILLEVELS
         //================================================
         jobSkills.filter(function(s) jobSkillTreeIDs.indexOf(s.PrimaryID) > -1).forEach(function(s) {
             var levels = skillLevels.filter(function(l) l.SkillIndex == s.PrimaryID)
@@ -186,7 +185,6 @@ var compile = function() {
                 }
             }
 
-            // PvE
             levels.filter(function(l) l.SkillLevel > 0 && l.SkillLevel <= s.MaxLevel).forEach(function(l) {
                 if (! skill.Levels[l.SkillLevel]) {
                     skill.Levels[l.SkillLevel] = {}
@@ -233,13 +231,13 @@ var compile = function() {
     })
 
     //================================================
-    // get the player levels
+    // SETUP PLAYER LEVELS (SP GAIN PER LEVEL)
     //================================================
     db.Levels = playerLevels.filter(function(p) p.PrimaryID <= LEVEL_CAP).map(function(p) p.SkillPoint)
 
 
     //================================================
-    // get the weapons
+    // SETUP THE WEAPON TYPE TO NAME ID MAPPING
     //================================================
     items.filter(function(i) i.NameID == 1000006853 && i.LevelLimit == 1)
         .reduce(function(p,c) {
@@ -256,7 +254,7 @@ var compile = function() {
         })
 
     //================================================
-    // Setup the UI String
+    // SETUP THE LOOKUP TABLE
     //================================================
     var uistringFile = new JFile(UISTRING_PATH)
     var document = JDocumentBuilderFactory.newInstance().newDocumentBuilder().parse(uistringFile)
@@ -273,7 +271,7 @@ var compile = function() {
 
 
     //================================================
-    // Translate the job names
+    // TRANSLATE JOB NAME ID TO ACTUAL NAME
     //================================================
     for (jobID in db.Jobs) {
         db.Jobs[jobID].JobName = db.Lookup[db.Jobs[jobID].JobName]
@@ -281,7 +279,7 @@ var compile = function() {
 
 
     //================================================
-    // Translate the weapon names
+    // TRANSLATE WEAPON NAME ID TO ACTUAL NAME
     //================================================
     for (weapType in db.Weapons) {
         db.Weapons[weapType] = db.Lookup[db.Weapons[weapType]]
@@ -289,7 +287,7 @@ var compile = function() {
 
 
     //================================================
-    // Setup skills for every 2nd class
+    // SETUP ALL NECESSARY DATA FOR CLIENT SIDE
     //================================================
     for (jobID in db.Jobs) {
         var job = db.Jobs[jobID]
@@ -318,7 +316,7 @@ var compile = function() {
     }
 
     //================================================
-    // Delete unnecessary properties from db
+    // DELETE UNNECESSARY DATA FROM DB
     //================================================
     delete db.Lookup
     delete db.Weapons
