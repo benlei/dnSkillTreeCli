@@ -324,7 +324,7 @@ var compile = function() {
             var json = {Skills: {}, Lookup: {}, Weapons: {}}
             var parentJob = db.Jobs[job.ParentJob]
             var baseJob = db.Jobs[parentJob.ParentJob]
-            for (j in [baseJob, parentJob, job]) {
+            [baseJob, parentJob, job].forEach(function(j) {
                 for (skillID in j.Skills) {
                     var skill = j.Skills[skillID]
                     json[skillID] = skill
@@ -338,7 +338,7 @@ var compile = function() {
                 for (l in j.LookupSet) {
                     json.Lookup[j.LookupSet[l]] = db.Lookup[j.LookupSet[l]]
                 }
-            }
+            })
 
             write(job.EnglishName, json)
         }
