@@ -322,11 +322,11 @@ var compile = function() {
         if (job.JobNumber == 2) {
             var json = {Skills: {}, Lookup: {}, Weapons: {}}
             var parentJob = db.Jobs[job.ParentJob]
-            var baseJob = db.Jobs[parentJob.ParentJob];
+            var baseJob = db.Jobs[parentJob.ParentJob]; // need to separate from next line
             [baseJob, parentJob, job].forEach(function(j) {
                 for (skillID in j.Skills) {
                     var skill = j.Skills[skillID]
-                    json[skillID] = skill
+                    json.Skills[skillID] = skill
                     if (skill.NeedWeaponType) {
                         for (weapType in skill.NeedWeaponType) {
                             json.Weapons[weapType] = db.Weapons[weapType]
