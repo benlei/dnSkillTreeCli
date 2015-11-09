@@ -144,7 +144,6 @@ var compile = function() {
             skill.NameID = s.NameID
             skill.MaxLevel = s.MaxLevel
             skill.SPMaxLevel = s.SPMaxLevel
-            skill.SkillType = s.SkillType
             skill.Levels = {}
 
             // sprite stuff
@@ -323,7 +322,7 @@ var compile = function() {
         if (job.JobNumber == 2) {
             var json = {Skills: {}, Lookup: {}, Weapons: {}}
             var parentJob = db.Jobs[job.ParentJob]
-            var baseJob = db.Jobs[parentJob.ParentJob]
+            var baseJob = db.Jobs[parentJob.ParentJob];
             [baseJob, parentJob, job].forEach(function(j) {
                 for (skillID in j.Skills) {
                     var skill = j.Skills[skillID]
