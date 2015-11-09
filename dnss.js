@@ -95,7 +95,8 @@ var compile = function() {
         // primary class
         if (job.JobNumber == 2) {
             var job1 = jobs.filter(function(j) j.PrimaryID == job.ParentJob)[0]
-            db.Jobs[job.PrimaryID].Line = [job1.ParentJob, job.ParentJob, job.PrimaryID]
+            db.Jobs[job.PrimaryID].ParentJob = job.ParentJob
+            db.Jobs[job.PrimaryID].BaseJob = job1.ParentJob
         }
 
 
