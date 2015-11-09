@@ -76,7 +76,7 @@ var compile = function() {
     UISTRING_PATH = JSystem.getenv("DN_UISTRING_PATH")
 
     // the backend db
-    var db = {Jobs: {}, Lookup: {}, JobTree: []}
+    var db = {Jobs: {}, Lookup: {}, SP: [], Weapons: {}}
     var lookup = new JHashSet()
 
     //================================================
@@ -87,13 +87,29 @@ var compile = function() {
         job.MaxSPJob1 = Number(job.MaxSPJob1.toFixed(3))
         job.EnglishName = job.EnglishName.toLowerCase()
 
-        // init the db skilltree for this job
-        db.Jobs[job.PrimaryID] = {EnglishName: job.EnglishName, SkillTree: [], Skills: {}, LookupSet: []}
+        // init the job in the db
+        db.Jobs[job.PrimaryID] = {
+            EnglishName: job.EnglishName,
+            ParentJob: job.ParentJob,
+            JobNumber: job.JobNumber,
+            JobName: job.JobName,
+            IconRow: parseInt(job.JobIcon / 9),
+            IconCol: job.JobIcon % 9,
+            SkillTree: [],
+            Skills: {},
+            LookupSet: [],
+        }
 
-        db.Jobs[job.PrimaryID].ParentJob = job.ParentJob
-        db.Jobs[job.PrimaryID].JobNumber = job.JobNumber
+        // add name lookup set
+        lookup.add(int(job.JobName))
 
-        // setup skill table
+        if (job.JobNumber == 2 && ! db.SP) {
+            db.SP = [job.MaxSPJob0, job.MaxSPJob1, job.MaxSPJob2]
+        }
+
+        //================================================
+        // START SETUP SKILLTREE
+        //================================================
         jobSkills = skills.filter(function(s) s.NeedJob == job.PrimaryID)
         jobSkillsID = jobSkills.map(function(s) s.PrimaryID)
         jobSkillTree = skillTree.filter(function(t) jobSkillsID.indexOf(t.SkillTableID) > -1)
@@ -108,19 +124,12 @@ var compile = function() {
 
             var skill = db.Jobs[job.PrimaryID].Skills[t.SkillTableID]
 
-            // setup the parent job hash
-            if (t.ParentSkillID1 > 0) {
-                skill.ParentSkills = {}
-                skill.ParentSkills[t.ParentSkillID1] = t.NeedParentSkillLevel1
-            }
-
-            if (t.ParentSkillID2 > 0) {
-                skill.ParentSkills[t.ParentSkillID2] = t.NeedParentSkillLevel2
-            }
-
-            if (t.ParentSkillID3 > 0) {
-                skill.ParentSkills[t.ParentSkillID3] = t.NeedParentSkillLevel3
-            }
+            // setup parent skills
+            skill.ParentSkills = {}
+            skill.ParentSkills[t.ParentSkillID1] = t.NeedParentSkillLevel1
+            skill.ParentSkills[t.ParentSkillID2] = t.NeedParentSkillLevel2
+            skill.ParentSkills[t.ParentSkillID3] = t.NeedParentSkillLevel3
+            delete skill.ParentSkills[0]
         })
 
         // ensure sizes are always 24
@@ -137,7 +146,10 @@ var compile = function() {
 
         db.Jobs[job.PrimaryID].SkillTree = newSkillTree
 
-        // setup skill levels
+
+        //================================================
+        // START SETUP SKILLEVELS
+        //================================================
         jobSkills.filter(function(s) jobSkillTreeIDs.indexOf(s.PrimaryID) > -1).forEach(function(s) {
             var levels = skillLevels.filter(function(l) l.SkillIndex == s.PrimaryID)
             var skill = db.Jobs[job.PrimaryID].Skills[s.PrimaryID]
@@ -221,23 +233,6 @@ var compile = function() {
     })
 
     //================================================
-    // further setup the jobs
-    //================================================
-    jobs.filter(function(job) job.Service).forEach(function(job) {
-        db.Jobs[job.PrimaryID].ParentJob = job.ParentJob
-        db.Jobs[job.PrimaryID].JobNumber = job.JobNumber
-        db.Jobs[job.PrimaryID].JobName = job.JobName
-        db.Jobs[job.PrimaryID].IconRow = parseInt(job.JobIcon / 9)
-        db.Jobs[job.PrimaryID].IconCol = job.JobIcon % 9
-
-        lookup.add(int(job.JobName))
-        if (job.JobNumber == 2) { // can reassign multiple times, not a big deal
-            db.SP = [job.MaxSPJob0, job.MaxSPJob1, job.MaxSPJob2]
-        }
-    })
-
-
-    //================================================
     // get the player levels
     //================================================
     db.Levels = playerLevels.filter(function(p) p.PrimaryID <= LEVEL_CAP).map(function(p) p.SkillPoint)
@@ -246,7 +241,6 @@ var compile = function() {
     //================================================
     // get the weapons
     //================================================
-    var weaponTypeNameIDs = {}
     items.filter(function(i) i.NameID == 1000006853 && i.LevelLimit == 1)
         .reduce(function(p,c) {
             var find = p.filter(function(_p) _p.NameIDParam == c.NameIDParam)
@@ -257,31 +251,9 @@ var compile = function() {
         }, [])
         .forEach(function(i) {
             var weapon = weapons.filter(function(w) w.PrimaryID == i.PrimaryID)[0]
-            weaponTypeNameIDs[weapon.EquipType] = i.NameIDParam.substring(1, i.NameIDParam.length - 1)
-            lookup.add(int(weaponTypeNameIDs[weapon.EquipType]))
+            db.Weapons[weapon.EquipType] = i.NameIDParam.substring(1, i.NameIDParam.length - 1)
+            lookup.add(int(db.Weapons[weapon.EquipType]))
         })
-
-    db.Weapons = weaponTypeNameIDs
-
-
-    //================================================
-    // setup the job tree
-    //================================================
-    jobs.filter(function(job) job.Service && job.JobNumber == 0).forEach(function(job) {
-        db.JobTree.push({ID: job.PrimaryID, Advancements: []})
-    });
-
-    jobs.filter(function(job) job.Service && job.JobNumber == 1).forEach(function(job) {
-        db.JobTree.filter(function(j) j.ID == job.ParentJob)[0].Advancements.push({ID: job.PrimaryID, Advancements: []})
-    });
-
-
-    jobs.filter(function(job) job.Service && job.JobNumber == 2).forEach(function(job) {
-        db.JobTree.forEach(function(j) {
-            var adv = j.Advancements.filter(function(j2) j2.ID == job.ParentJob)
-             adv[0] && adv[0].Advancements.push({ID: job.PrimaryID})
-        })
-    });
 
     //================================================
     // Setup the UI String
@@ -307,12 +279,14 @@ var compile = function() {
         db.Jobs[jobID].JobName = db.Lookup[db.Jobs[jobID].JobName]
     }
 
+
     //================================================
     // Translate the weapon names
     //================================================
     for (weapType in db.Weapons) {
         db.Weapons[weapType] = db.Lookup[db.Weapons[weapType]]
     }
+
 
     //================================================
     // Setup skills for every 2nd class
@@ -343,13 +317,14 @@ var compile = function() {
         }
     }
 
+    //================================================
+    // Delete unnecessary properties from db
+    //================================================
     delete db.Lookup
     delete db.Weapons
-
     for (jobID in db.Jobs) {
         delete db.Jobs[jobID].LookupSet
     }
-
 
     write("db", db)
 }
