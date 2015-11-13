@@ -171,7 +171,8 @@ public class Pak {
                 }
 
                 int size = (Integer) map.getMember("size");
-                if (size == 0) {
+                int zSize = (Integer) map.getMember("zsize");
+                if (size == 0 || zSize == 0) {
                     deleted++;
                 }
             }
@@ -188,7 +189,7 @@ public class Pak {
                     int size = (Integer) object.getMember("size");
                     int zSize = (Integer) object.getMember("zsize");
                     String extraMessage;
-                    if (size == 0) {
+                    if (size == 0 || zSize == 0) {
                         extraMessage = "*deleted*";
                     } else {
                         extraMessage = String.format("(%dB -> %dB)", size, zSize);
@@ -233,7 +234,7 @@ public class Pak {
                         extractTo(outputFile, force, map, quiet);
                         extracted++;
                     }
-                } else if ((Integer) map.getMember("size") != 0) {
+                } else if ((Integer) map.getMember("size") != 0 && (Integer) map.getMember("zsize") != 0) {
                     extractTo(outputFile, force, map, quiet);
                     extracted++;
                 }

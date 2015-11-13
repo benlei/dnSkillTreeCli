@@ -29,7 +29,7 @@ var regExps = {
 
 var filter = function(node) {
     for (i in regExps) {
-        if (regExps[i].test(node.path) && node.size != 0) {
+        if (regExps[i].test(node.path) && node.zsize != 0 && node.size != 0) {
             return true
         }
     }
