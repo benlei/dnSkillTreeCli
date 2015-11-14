@@ -129,6 +129,9 @@ var compile = function() {
             skill.ParentSkills[t.ParentSkillID2] = t.NeedParentSkillLevel2
             skill.ParentSkills[t.ParentSkillID3] = t.NeedParentSkillLevel3
             delete skill.ParentSkills[0]
+            if (t.ParentSkillID1 + t.ParentSkillID2 + t.ParentSkillID1 == 0) {
+                delete skill.ParentSkills
+            }
         })
 
         // ensure sizes are always 24
