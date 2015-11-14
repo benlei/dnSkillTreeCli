@@ -22,8 +22,8 @@ var regExps = {
     dnt: /\\(skilltable_character.*|skillleveltable_character.*|skilltreetable|jobtable|playerleveltable|itemtable|weapontable)\.dnt$/i,
     jobicon: /^\\resource\\ui\\mainbar\\jobicon.*/i,
     skillicon: /^\\resource\\ui\\mainbar\\skillicon.*/i,
-    uistring: /^\\resource\\uistring\\uistring.xml$/i,
-    version: /version.cfg$/i,
+    uistring: /^\\resource\\uistring\\uistring\.xml$/i,
+    uitemplatetexture: /uit_gesturebutton\.dds/i,
     skilltree: /^\\resource\\ui\\skill\\.*\.dds/i,
 }
 
