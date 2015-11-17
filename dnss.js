@@ -124,13 +124,12 @@ var compile = function() {
             var skill = db.Jobs[job.PrimaryID].Skills[t.SkillTableID]
 
             // setup parent skills
-            skill.ParentSkills = {}
-            skill.ParentSkills[t.ParentSkillID1] = t.NeedParentSkillLevel1
-            skill.ParentSkills[t.ParentSkillID2] = t.NeedParentSkillLevel2
-            skill.ParentSkills[t.ParentSkillID3] = t.NeedParentSkillLevel3
-            delete skill.ParentSkills[0]
-            if (t.ParentSkillID1 + t.ParentSkillID2 + t.ParentSkillID1 == 0) {
-                delete skill.ParentSkills
+            if (t.ParentSkillID1 + t.ParentSkillID2 + t.ParentSkillID1 != 0) {
+                skill.ParentSkills = {}
+                skill.ParentSkills[t.ParentSkillID1] = t.NeedParentSkillLevel1
+                skill.ParentSkills[t.ParentSkillID2] = t.NeedParentSkillLevel2
+                skill.ParentSkills[t.ParentSkillID3] = t.NeedParentSkillLevel3
+                delete skill.ParentSkills[0]
             }
         })
 
@@ -209,8 +208,14 @@ var compile = function() {
                     level.LevelLimit = l.LevelLimit // required level
                     level.SkillPoint = l.NeedSkillPoint
                     level.ApplyType[0] = applyType
+                    if (s.GlobalCoolTimePvE) { // the pve cd override
+                        applyType.DelayTime = s.GlobalCoolTimePvE
+                    }
                 } else { // PvP
                     level.ApplyType[1] = applyType
+                    if (s.GlobalCoolTimePvP) { // the pvp cd override
+                        applyType.DelayTime = s.GlobalCoolTimePvP
+                    }
                 }
 
                 // add uistring
