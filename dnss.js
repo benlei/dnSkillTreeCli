@@ -165,7 +165,7 @@ var compile = function() {
             skill.DelayTime = [[], []]
             skill.DecreaseSP = [[], []]
             skill.SkillExplanationID = [[], []]
-            skill.SkillExplanationIDParam = [[], []
+            skill.SkillExplanationIDParam = [[], []]
 
             // sprite stuff
             skill.Sprite = JString.format("%1$02d", int((s.IconImageIndex / 200) + 1))
@@ -206,10 +206,10 @@ var compile = function() {
                     globalCoolTime = s.GlobalCoolTimePvP
                 }
 
-                skill.DelayTime[lvlIndex][l.ApplyType] = globalCoolTime ? globalCoolTime : l.DelayTime // cooldown
-                skill.DecreaseSP[lvlIndex][l.ApplyType] = l.DecreaseSP // really is MP...
-                skill.SkillExplanationID[lvlIndex][l.ApplyType] = l.SkillExplanationID
-                skill.SkillExplanationIDParam[lvlIndex][l.ApplyType] = l.SkillExplanationIDParam
+                skill.DelayTime[l.ApplyType][lvlIndex] = globalCoolTime ? globalCoolTime : l.DelayTime // cooldown
+                skill.DecreaseSP[l.ApplyType][lvlIndex] = l.DecreaseSP // really is MP...
+                skill.SkillExplanationID[l.ApplyType][lvlIndex] = l.SkillExplanationID
+                skill.SkillExplanationIDParam[l.ApplyType][lvlIndex] = l.SkillExplanationIDParam
 
                 // add uistring
                 lookup.add(int(l.SkillExplanationID))
