@@ -160,7 +160,12 @@ var compile = function() {
             skill.SkillType = s.SkillType
             skill.DurationType = s.DurationType
             skill.Element = s.Element
-            skill.Levels = {}
+            skill.LevelLimit = []
+            skill.SkillPoint = []
+            skill.DelayTime = [[], []]
+            skill.DecreaseSP = [[], []]
+            skill.SkillExplanationID = [[], []]
+            skill.SkillExplanationIDParam = [[], []
 
             // sprite stuff
             skill.Sprite = JString.format("%1$02d", int((s.IconImageIndex / 200) + 1))
@@ -191,35 +196,20 @@ var compile = function() {
             }
 
             levels.filter(function(l) l.SkillLevel > 0 && l.SkillLevel <= s.MaxLevel).forEach(function(l) {
-                if (! skill.Levels[l.SkillLevel]) {
-                    skill.Levels[l.SkillLevel] = {}
-                }
-
-                var level = skill.Levels[l.SkillLevel]
-                var applyType = {
-                    DelayTime: l.DelayTime, // cooldown
-                    DecreaseSP: l.DecreaseSP, // really is MP...
-                    SkillExplanationID: l.SkillExplanationID,
-                    SkillExplanationIDParam: l.SkillExplanationIDParam,
-                }
-
-                if (! level.ApplyType)  {
-                    level.ApplyType = []
-                }
+                var lvlIndex = l.SkillLevel - 1
+                var globalCoolTime = s.GlobalCoolTimePvE
 
                 if (l.ApplyType == 0) { // PvE
-                    level.LevelLimit = l.LevelLimit // required level
-                    level.SkillPoint = l.NeedSkillPoint
-                    level.ApplyType[0] = applyType
-                    if (s.GlobalCoolTimePvE) { // the pve cd override
-                        applyType.DelayTime = s.GlobalCoolTimePvE
-                    }
+                    skill.LevelLimit[lvlIndex] = l.LevelLimit // required level
+                    skill.SkillPoint[lvlIndex] = l.NeedSkillPoint
                 } else { // PvP
-                    level.ApplyType[1] = applyType
-                    if (s.GlobalCoolTimePvP) { // the pvp cd override
-                        applyType.DelayTime = s.GlobalCoolTimePvP
-                    }
+                    globalCoolTime = s.GlobalCoolTimePvP
                 }
+
+                skill.DelayTime[lvlIndex][l.ApplyType] = globalCoolTime ? globalCoolTime : l.DelayTime // cooldown
+                skill.DecreaseSP[lvlIndex][l.ApplyType] = l.DecreaseSP // really is MP...
+                skill.SkillExplanationID[lvlIndex][l.ApplyType] = l.SkillExplanationID
+                skill.SkillExplanationIDParam[lvlIndex][l.ApplyType] = l.SkillExplanationIDParam
 
                 // add uistring
                 lookup.add(int(l.SkillExplanationID))
