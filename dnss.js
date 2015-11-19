@@ -160,6 +160,7 @@ var compile = function() {
             skill.SkillType = s.skillType
             skill.Debuff = s.DebuffIconImageIndex != -1
             skill.Buff = s.BuffIconImageIndex != -1
+            skill.Element = s.Element
             skill.Levels = {}
 
             // sprite stuff
