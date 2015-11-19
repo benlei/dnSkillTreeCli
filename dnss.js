@@ -157,6 +157,9 @@ var compile = function() {
             skill.NameID = s.NameID
             skill.MaxLevel = s.MaxLevel
             skill.SPMaxLevel = s.SPMaxLevel
+            skill.SkillType = s.skillType
+            skill.Debuff = s.DebuffIconImageIndex != -1
+            skill.Buff = s.BuffIconImageIndex != -1
             skill.Levels = {}
 
             // sprite stuff
