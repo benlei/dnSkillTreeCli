@@ -117,9 +117,12 @@ var compile = function() {
             db.Jobs[job.PrimaryID].SkillTree[t.TreeSlotIndex] = t.SkillTableID
 
             // setup initial Skills with job sp req
-            db.Jobs[job.PrimaryID].Skills[t.SkillTableID] = {
-                NeedSP: [t.NeedBasicSP1, t.NeedFirstSP1, t.NeedSecondSP1]
+            db.Jobs[job.PrimaryID].Skills[t.SkillTableID] = {}
+
+            if (t.NeedBasicSP1 + t.NeedFirstSP1 + t.NeedSecondSP1 > 0) {
+                db.Jobs[job.PrimaryID].Skills[t.SkillTableID].NeedSP = [t.NeedBasicSP1, t.NeedFirstSP1, t.NeedSecondSP1]
             }
+
 
             var skill = db.Jobs[job.PrimaryID].Skills[t.SkillTableID]
 
