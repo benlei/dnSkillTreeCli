@@ -159,7 +159,6 @@ var compile = function() {
             skill.SPMaxLevel = s.SPMaxLevel
             skill.SkillType = s.SkillType
             skill.DurationType = s.DurationType
-            skill.Element = s.Element
             skill.Levels = {}
 
             // sprite stuff
@@ -169,6 +168,10 @@ var compile = function() {
 
             lookup.add(int(s.NameID))
             db.Jobs[job.PrimaryID].LookupSet.push(s.NameID)
+
+            if (skill.Element != -1) {
+                skill.Element = s.Element
+            }
 
             if (s.SkillGroup > 0) {
                 skill.SkillGroup = s.SkillGroup
