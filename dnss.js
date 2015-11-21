@@ -314,9 +314,9 @@ var compile = function() {
                     var skill = j.Skills[skillID]
                     json.Skills[skillID] = skill
                     if (skill.NeedWeaponType) {
-                        for (weapType in skill.NeedWeaponType) {
+                        skill.NeedWeaponType.forEach(function(weapType) {
                             json.Weapons[weapType] = db.Weapons[weapType]
-                        }
+                        });
                     }
                 }
 
