@@ -169,7 +169,7 @@ var compile = function() {
             lookup.add(int(s.NameID))
             db.Jobs[job.PrimaryID].LookupSet.push(s.NameID)
 
-            if (skill.Element != -1) {
+            if (s.Element != -1) {
                 skill.Element = s.Element
             }
 
