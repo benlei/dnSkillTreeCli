@@ -144,8 +144,9 @@ var compile = function() {
         }
 
         var newSkillTree = []
-        for (var i = 0; i < db.Jobs[job.PrimaryID].SkillTree.length; i += 4) {
-            newSkillTree.push(db.Jobs[job.PrimaryID].SkillTree.slice(i, i + 4))
+        var st = db.Jobs[job.PrimaryID].SkillTree
+        for (var i = 0; i < 24; i += 4) {
+            newSkillTree.push([st[i], st[i+1], st[i+2], st[i+3]])
         }
 
         db.Jobs[job.PrimaryID].SkillTree = newSkillTree
