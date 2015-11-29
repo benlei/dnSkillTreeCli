@@ -3,7 +3,7 @@
 
   <groupId>dncli</groupId>
   <artifactId>dncli</artifactId>
-  <version>1.1-SNAPSHOT</version>
+  <version>1.1</version>
   <packaging>jar</packaging>
 
   <name>DragonNest CLI</name>
@@ -19,7 +19,7 @@
     <connection>scm:git:git@github.com:ben-lei/dncli.git</connection>
     <developerConnection>scm:git:git@github.com:ben-lei/dncli.git</developerConnection>
     <url>https://github.com/ben-lei/dncli</url>
-    <tag>HEAD</tag>
+    <tag>dncli-1.1</tag>
   </scm>
 
 
