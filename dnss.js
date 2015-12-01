@@ -79,6 +79,13 @@ var compile = function() {
     var db = {Jobs: {}, Lookup: {}, SP: [], Weapons: {}}
     var lookup = new JHashSet()
 
+    var techs = {};
+    items.forEach(function(item) {
+        if (item.ExchangeType > 7 && item.ExchangeType < 11) {
+            techs[item.SkillID] = item.ExchangeType;
+        }
+    });
+
     jobs.filter(function(job) job.Service).forEach(function(job) {
         // fix a few things
         job.MaxSPJob1 = Number(job.MaxSPJob1.toFixed(3))
@@ -97,6 +104,7 @@ var compile = function() {
             SkillTree: [],
             Skills: {},
             LookupSet: [],
+            Techs: {Necklace: [], Earring: [], Ring: []}
         }
 
         // add name lookup set
@@ -195,6 +203,12 @@ var compile = function() {
                 if (s.NeedWeaponType2 > -1) {
                     skill.NeedWeaponType.push(s.NeedWeaponType2)
                 }
+            }
+
+            switch (techs[s.PrimaryID]) {
+                case 8:  db.Jobs[job.PrimaryID].Techs.Necklace.push(s.PrimaryID); break;
+                case 9:  db.Jobs[job.PrimaryID].Techs.Earring.push(s.PrimaryID); break;
+                case 10: db.Jobs[job.PrimaryID].Techs.Ring.push(s.PrimaryID); break;
             }
 
             levels.filter(function(l) l.SkillLevel > 0 && l.SkillLevel <= s.MaxLevel).forEach(function(l) {
@@ -310,7 +324,7 @@ var compile = function() {
     for (jobID in db.Jobs) {
         var job = db.Jobs[jobID]
         if (job.JobNumber == 2) {
-            var json = {Skills: {}, Lookup: {}, Weapons: {}}
+            var json = {Skills: {}, Lookup: {}, Weapons: {}, Techs: {}}
             var parentJob = db.Jobs[job.ParentJob]
             var baseJob = db.Jobs[parentJob.ParentJob]; // need to separate from next line
             [baseJob, parentJob, job].forEach(function(j) {
@@ -327,6 +341,12 @@ var compile = function() {
                 for (l in j.LookupSet) {
                     json.Lookup[j.LookupSet[l]] = db.Lookup[j.LookupSet[l]]
                 }
+
+                json.Techs = {
+                    Necklace: baseJob.Techs.Necklace.concat(parentJob.Techs.Necklace).concat(job.Techs.Necklace),
+                    Earring: baseJob.Techs.Earring.concat(parentJob.Techs.Earring).concat(job.Techs.Earring),
+                    Ring: baseJob.Techs.Ring.concat(parentJob.Techs.Ring).concat(job.Techs.Ring)
+                };
             })
 
             write(job.EnglishName, json)
