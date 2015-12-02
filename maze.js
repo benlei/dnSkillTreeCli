@@ -104,7 +104,7 @@ var compile = function() {
             SkillTree: [],
             Skills: {},
             LookupSet: [],
-            Techs: {Necklace: [], Earring: [], Ring: []}
+            Techs: {Necklace: [], Earring: [], Ring: [], Weapon: []}
         }
 
         // add name lookup set
@@ -259,6 +259,17 @@ var compile = function() {
                     })
                 }
             })
+
+            // weapon techs
+            if (techs[s.PrimaryID]) {
+                if (! job.JobNumber) { // all base jobs CAN have this tech'd
+                    db.Jobs[job.PrimaryID].Techs.Weapon.push(s.PrimaryID);
+                }
+            }
+
+            if (job.JobNumber == 1 && skill.Levels[1].LevelLimit == 15 && db.Jobs[job.PrimaryID].Techs.Weapon.indexOf(s.PrimaryID) == -1) {
+                db.Jobs[job.PrimaryID].Techs.Weapon.push(s.PrimaryID);
+            }
         })
     })
 
