@@ -352,13 +352,6 @@ var compile = function() {
                 for (l in j.LookupSet) {
                     json.Lookup[j.LookupSet[l]] = db.Lookup[j.LookupSet[l]]
                 }
-
-                json.Techs = {
-                    Necklace: baseJob.Techs.Necklace.concat(parentJob.Techs.Necklace).concat(job.Techs.Necklace),
-                    Earring: baseJob.Techs.Earring.concat(parentJob.Techs.Earring).concat(job.Techs.Earring),
-                    Ring: baseJob.Techs.Ring.concat(parentJob.Techs.Ring).concat(job.Techs.Ring),
-                    Weapon: baseJob.Techs.Weapon.concat(parentJob.Techs.Weapon) // no weapon tech for last job num
-                };
             })
 
             write(job.EnglishName, json)
