@@ -361,7 +361,6 @@ var compile = function() {
     //================================================
     // DELETE UNNECESSARY DATA FROM DB
     //================================================
-    delete db.Lookup
     delete db.Weapons
     for (jobID in db.Jobs) {
         delete db.Jobs[jobID].LookupSet
