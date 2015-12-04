@@ -199,6 +199,10 @@ public class Pak {
                             extraMessage));
                 }
             }
+
+            if (i + 1 != paks.size()) {
+                System.out.println();
+            }
         }
     }
 
