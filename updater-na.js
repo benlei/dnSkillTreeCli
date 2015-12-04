@@ -70,6 +70,6 @@ for (var i = version + 1; i <= serverVersion; i++) {
 }
 
 var output = new JFileOutputStream(VERSION_FILE)
-output.write((new JString(serverVersion)).getBytes()))
+output.write((new JString(serverVersion)).getBytes())
 output.close()
 print("Updated " + VERSION_FILE + " to " + serverVersion)
