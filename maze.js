@@ -19,7 +19,7 @@ var JDocumentBuilderFactory = Java.type("javax.xml.parsers.DocumentBuilderFactor
 // Pak object filter
 //======================================
 var regExps = {
-    dnt: /\\(skilltable_character.*|skillleveltable_character.*|skilltreetable|jobtable|playerleveltable|itemtable|weapontable)\.dnt$/i,
+    dnt: /\\(skilltable_character.*|skillleveltable_character.*|skilltreetable|jobtable|playerleveltable|itemtable.*|glyphskilltable|weapontable)\.dnt$/i,
     jobicon: /^\\resource\\ui\\mainbar\\jobicon.*/i,
     skillicon: /^\\resource\\ui\\mainbar\\skillicon.*/i,
     uistring: /^\\resource\\uistring\\uistring\.xml$/i,
