@@ -104,7 +104,7 @@ var compile = function() {
             SkillTree: [],
             Skills: {},
             LookupSet: [],
-            Techs: {Necklace: [], Earring: [], Ring: [], Weapon: []}
+            Techs: {Necklace: [], Earring: [], Ring: [], Weapon: [], Crest: []}
         }
 
         // add name lookup set
@@ -267,8 +267,13 @@ var compile = function() {
                 }
             }
 
-            if (job.JobNumber == 1 && skill.Levels[1].LevelLimit == 15 && db.Jobs[job.PrimaryID].Techs.Weapon.indexOf(s.PrimaryID) == -1) {
+            if (techs[s.PrimaryID] && skill.Levels[1].LevelLimit <= 16 && db.Jobs[job.PrimaryID].Techs.Weapon.indexOf(s.PrimaryID) == -1) {
                 db.Jobs[job.PrimaryID].Techs.Weapon.push(s.PrimaryID);
+            }
+
+            // add crest techs
+            if (s.SPMaxLevel) {
+                db.Jobs[job.PrimaryID].Techs.Crest.push(s.PrimaryID);
             }
         })
     })
