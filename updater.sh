@@ -35,3 +35,7 @@ mv -f *.png ${NPM_ROOT}/public/images/ui/mainbar/
 cd ${MAZE_STATIC}/resource/ui/skill
 dn dds -fp --png *.dds
 mv -f *.png ${NPM_ROOT}/public/images/ui/skill/
+
+
+cd /maze
+gulp
