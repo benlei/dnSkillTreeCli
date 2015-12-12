@@ -37,8 +37,7 @@ var getVersion = function(version) {
 
 
 // get the current version
-//var version = getVersion(new JString(JFiles.readAllBytes(new JFile(VERSION_FILE).toPath())))
-var version = 500
+var version = getVersion(new JString(JFiles.readAllBytes(new JFile(VERSION_FILE).toPath())))
 
 // get server version
 var serverVersionURL = new JURL(VERSION_URL)
@@ -55,10 +54,10 @@ serverVersion = getVersion(serverVersion)
 if (version == serverVersion) {
     print("Client and server version is " + version)
     print("No need to update")
-    exit()
+    exit(1)
 } else if (version > serverVersion) {
     print(JString.format("ERROR: Client reports version %d, but Server reports version %d.", version, serverVersion))
-    exit()
+    exit(1)
 }
 
 for (var i = version + 1; i <= serverVersion; i++) {
@@ -73,3 +72,4 @@ var output = new JFileOutputStream(VERSION_FILE)
 output.write((new JString(serverVersion)).getBytes())
 output.close()
 print("Updated " + VERSION_FILE + " to " + serverVersion)
+exit(0)
