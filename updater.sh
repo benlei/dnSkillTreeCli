@@ -10,7 +10,7 @@ export DN_OUT_DIR=$(mktemp -d)
 jjs updater-na.js
 
 if [[ $? -ne 0 ]]; then
-  exit 0
+  exit 1
 fi
 
 dn pak -xf -e maze.js ${DN_OUT_DIR}/*.pak ${MAZE_STATIC}
@@ -39,3 +39,5 @@ mv -f *.png ${NPM_ROOT}/public/images/ui/skill/
 
 cd /maze
 gulp
+
+exit 0
