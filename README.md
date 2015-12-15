@@ -31,15 +31,15 @@ Available commands:
  dds            Converts .dds files to .png or .jpg image files.
 ```
 
-The following should parse through all DNT files, pass it into the accumulate function defined in dnss.js, and then finally run a compile() function (also must be defined in dnss.js).
+The following should parse through all DNT files, pass it into the accumulate function defined in maze.js, and then finally run a compile() function (also must be defined in maze.js).
 
 ```
-$ dn dnt -c dnss.js /path/to/resources/ext/*
+$ dn dnt -c maze.js /path/to/resources/ext/*
 ```
 
 or on a Windows PowerShell:
 ```
-> dn dnt -c dnss.js "D:\dragonnest\resources\ext\*"
+> dn dnt -c maze.js "D:\dragonnest\resources\ext\*"
 ```
 
 Please look up more information about Nashorn in order to better write JavaScript for Java: <http://www.oracle.com/technetwork/articles/java/jf14-nashorn-2126515.html>
