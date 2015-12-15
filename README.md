@@ -1,4 +1,4 @@
-# dnss-cli
+# dncli
 CLI for gathering data from Dragon Nest related files.
 
 You need do a `mvn package`, and then create an alias that runs the jar file. Or alternatively download the jar file from the release page.
