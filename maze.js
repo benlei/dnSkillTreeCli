@@ -258,7 +258,7 @@ var compile = function() {
                 }
             }
 
-            if (techs[s.PrimaryID] && skill.Levels[1].LevelLimit <= 16 && db.Jobs[job.PrimaryID].Techs.Weapon.indexOf(s.PrimaryID) == -1) {
+            if (techs[s.PrimaryID] && skill.LevelLimit[0].LevelLimit <= 16 && db.Jobs[job.PrimaryID].Techs.Weapon.indexOf(s.PrimaryID) == -1) {
                 db.Jobs[job.PrimaryID].Techs.Weapon.push(s.PrimaryID);
             }
 
