@@ -41,4 +41,12 @@ mv -f *.png ${NPM_ROOT}/public/images/ui/skill/
 cd /maze
 gulp
 
+curl https://www.cloudflare.com/api_json.html \
+  -d 'a=fpurge_ts' \
+  -d 'tkn=<API_KEY>' \
+  -d 'email=<EMAIL>' \
+  -d 'z=dnmaze.com' \
+  -d 'v=1'
+
+
 exit 0
