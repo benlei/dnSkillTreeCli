@@ -10,13 +10,14 @@ export DN_OUT_DIR=$(mktemp -d)
 jjs updater-na.js
 
 if [[ $? -ne 0 ]]; then
+  rm -rf ${DN_OUT_DIR}
   exit 1
 fi
 
 dn pak -xf -e maze.js ${DN_OUT_DIR}/*.pak ${MAZE_STATIC}
 
 # clear files
-rm -rf ${DN_OUT_DIR}/*
+rm -rf ${DN_OUT_DIR}
 
 
 export DN_OUT_DIR=${NPM_ROOT}/public/json
