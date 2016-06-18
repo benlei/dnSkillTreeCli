@@ -1,7 +1,8 @@
 package com.github.ben_lei.dncli.converter;
 
 import com.beust.jcommander.IStringConverter;
-import com.github.ben_lei.dncli.DdsOutputFormat;
+import com.github.ben_lei.dncli.command.DdsOutputFormat;
+import com.github.ben_lei.dncli.exception.InvalidDdsOutputFormatException;
 
 /**
  * Created by blei on 6/16/16.
@@ -10,16 +11,16 @@ public class DdsOutputFormatConverter implements IStringConverter<DdsOutputForma
   @Override
   public DdsOutputFormat convert(String value) {
     if (value == null) {
-      return DdsOutputFormat.INVALID;
+      throw new InvalidDdsOutputFormatException("nothing was provided");
     }
 
     value = value.toLowerCase();
     if ("png".equals(value)) {
-      return DdsOutputFormat.PNG;
+      return DdsOutputFormat.png;
     } else if ("jpg".equals(value)) {
-      return DdsOutputFormat.JPEG;
+      return DdsOutputFormat.jpg;
     }
 
-    return DdsOutputFormat.INVALID;
+    throw new InvalidDdsOutputFormatException("invalid output format: " + value);
   }
 }
