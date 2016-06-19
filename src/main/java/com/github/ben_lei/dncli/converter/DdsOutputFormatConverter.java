@@ -1,7 +1,7 @@
 package com.github.ben_lei.dncli.converter;
 
 import com.beust.jcommander.IStringConverter;
-import com.github.ben_lei.dncli.command.DdsOutputFormat;
+import com.github.ben_lei.dncli.enums.DdsOutputFormat;
 import com.github.ben_lei.dncli.exception.InvalidDdsOutputFormatException;
 
 /**
