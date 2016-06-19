@@ -16,11 +16,9 @@ import java.util.List;
 public class CommandDnt {
     private final Query query = new Query();
     private final Build build = new Build();
-    private final Command command;
 
-    CommandDnt(Command command) {
-        this.command = command;
-    }
+    @Parameter(names = {"-q", "--quiet"}, description = "Quiet output")
+    private boolean quiet;
 
     public Query getQuery() {
         return query;
@@ -30,6 +28,10 @@ public class CommandDnt {
         return build;
     }
 
+    public boolean isQuiet() {
+        return quiet;
+    }
+
     @Parameters
     public class Query implements Runnable {
         private final Runnable runner = new DntQuery(this);
@@ -37,6 +39,9 @@ public class CommandDnt {
         @Parameter(names = {"-j", "--javascript"}, description = "The query JS file that should just have a query() function.",
             converter = FileConverter.class, required = true)
         private File queryFile;
+
+        @Parameter(names = {"-q", "--quiet"}, description = "Quiet output")
+        private boolean quiet;
 
         @Parameter(description = "dntFiles...", required = true)
         private List<File> inputs;
@@ -50,7 +55,7 @@ public class CommandDnt {
         }
 
         public boolean isQuiet() {
-            return command.isQuiet();
+            return CommandDnt.this.isQuiet() || quiet;
         }
 
         @Override
@@ -70,6 +75,9 @@ public class CommandDnt {
             converter = FileConverter.class, required = true)
         private File queryFile;
 
+        @Parameter(names = {"-q", "--quiet"}, description = "Quiet output")
+        private boolean quiet;
+
         public List<File> getBaseFiles() {
             return baseFiles;
         }
@@ -79,7 +87,7 @@ public class CommandDnt {
         }
 
         public boolean isQuiet() {
-            return command.isQuiet();
+            return CommandDnt.this.isQuiet() || quiet;
         }
 
         @Override

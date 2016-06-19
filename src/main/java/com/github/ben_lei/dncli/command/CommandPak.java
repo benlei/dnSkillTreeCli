@@ -20,10 +20,12 @@ public class CommandPak {
     private final Compress compress = new Compress();
     private final Extract extract = new Extract();
     private final Detail detail = new Detail();
-    private final Command command;
 
-    CommandPak(Command command) {
-        this.command = command;
+    @Parameter(names = {"-q", "--quiet"}, description = "Quiet output")
+    private boolean quiet;
+
+    public boolean isQuiet() {
+        return quiet;
     }
 
     public Compress getCompress() {
@@ -55,6 +57,9 @@ public class CommandPak {
         @Parameter(names = {"-f", "--force"}, description = "Force overwrite files")
         private boolean force;
 
+        @Parameter(names = {"-q", "--quiet"}, description = "Quiet output")
+        private boolean quiet;
+
         public File getInput() {
             return input;
         }
@@ -72,7 +77,7 @@ public class CommandPak {
         }
 
         public boolean isQuiet() {
-            return command.isQuiet();
+            return CommandPak.this.isQuiet() || quiet;
         }
 
         @Override
@@ -85,7 +90,7 @@ public class CommandPak {
     public class Extract implements Runnable {
         private final Runnable runner = new PakExtract(this);
 
-        @Parameter(description = "pakFiles...", required = true)
+        @Parameter(description = "pakFiles...")
         private List<File> files = new ArrayList<>();
 
         @Parameter(names = {"-o", "--output"}, description = "Output directory to extract the paks.", converter = FileConverter.class, required = true)
@@ -97,6 +102,9 @@ public class CommandPak {
 
         @Parameter(names = {"-f", "--force"}, description = "Force overwrite files")
         private boolean force;
+
+        @Parameter(names = {"-q", "--quiet"}, description = "Quiet output")
+        private boolean quiet;
 
         public List<File> getFiles() {
             return files;
@@ -115,7 +123,7 @@ public class CommandPak {
         }
 
         public boolean isQuiet() {
-            return command.isQuiet();
+            return CommandPak.this.isQuiet() || quiet;
         }
 
         @Override
@@ -128,7 +136,10 @@ public class CommandPak {
     public class Detail implements Runnable {
         private final Runnable runner = new PakDetail(this);
 
-        @Parameter(description = "pakFiles...", required = true)
+        @Parameter(names = {"-q", "--quiet"}, description = "Quiet output")
+        private boolean quiet;
+
+        @Parameter(description = "pakFiles...")
         private List<File> files = new ArrayList<>();
 
         public List<File> getFiles() {
@@ -136,7 +147,7 @@ public class CommandPak {
         }
 
         public boolean isQuiet() {
-            return command.isQuiet();
+            return CommandPak.this.isQuiet() || quiet;
         }
 
         @Override

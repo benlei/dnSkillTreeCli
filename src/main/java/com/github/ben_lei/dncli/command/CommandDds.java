@@ -7,16 +7,15 @@ import com.github.ben_lei.dncli.converter.DdsOutputFormatConverter;
 import com.github.ben_lei.dncli.dds.DdsConverter;
 import com.github.ben_lei.dncli.enums.DdsOutputFormat;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Created by blei on 6/15/16.
  */
-@Parameters(commandNames = "dds", commandDescription = "Microsoft DDS to JPG/PNG converter.")
+@Parameters(commandNames = "dds", commandDescription = "Microsoft DDS to JPG/PNG converter. It is recommended to use ImageMagick if it's already installed.")
 public class CommandDds implements Runnable {
-    private final Command command;
-
     private final Runnable runner = new DdsConverter(this);
 
     @Parameter(names = {"-f", "--force"}, description = "Forces overwriting of " +
@@ -28,12 +27,11 @@ public class CommandDds implements Runnable {
         required = true)
     private DdsOutputFormat format;
 
-    @Parameter(description = "ddsFiles...", converter = FileConverter.class)
-    private List<String> files = new ArrayList<>();
+    @Parameter(names = {"-q", "--quiet"}, description = "Quiet output")
+    private boolean quiet;
 
-    CommandDds(Command command) {
-        this.command = command;
-    }
+    @Parameter(description = "ddsFiles...", converter = FileConverter.class)
+    private List<File> files = new ArrayList<>();
 
     public boolean isForce() {
         return force;
@@ -43,12 +41,12 @@ public class CommandDds implements Runnable {
         return format;
     }
 
-    public List<String> getFiles() {
+    public List<File> getFiles() {
         return files;
     }
 
     public boolean isQuiet() {
-        return command.isQuiet();
+        return quiet;
     }
 
     @Override
