@@ -107,7 +107,6 @@ public class CliApplication {
             System.exit(0);
         } catch (Throwable t) {
             System.out.println(t.getMessage());
-            System.out.println(111);
             System.exit(1);
         }
     }
