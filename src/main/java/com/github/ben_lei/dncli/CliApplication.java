@@ -51,15 +51,17 @@ public class CliApplication {
             exit(1);
         }
 
-        // if help was specified, show it!
-        if (command.isHelp()) {
+        String parsedCommand = jc.getParsedCommand();
+
+        // if no command or help was specified, show it!
+        if (parsedCommand == null || command.isHelp()) {
             jc.usage();
             System.exit(0);
         }
 
         // find out what command is being used
         try {
-            switch (jc.getParsedCommand()) {
+            switch (parsedCommand) {
                 case "pak":
                     switch (pakJc.getParsedCommand()) {
                         case "-c":
@@ -97,13 +99,15 @@ public class CliApplication {
                 case "dds":
                     dds.run();
                     break;
+
                 default:
-                    throw new UnsupportedOperationException("Unknown command: '" + jc.getParsedCommand() + "'");
+                    throw new UnsupportedOperationException("Unknown command: '" + parsedCommand + "'");
             }
 
             System.exit(0);
         } catch (Throwable t) {
             System.out.println(t.getMessage());
+            System.out.println(111);
             System.exit(1);
         }
     }
