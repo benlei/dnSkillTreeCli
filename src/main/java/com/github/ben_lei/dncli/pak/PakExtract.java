@@ -8,6 +8,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.stream.IntStream;
+import java.util.zip.DataFormatException;
 
 /**
  * Created by blei on 5/29/16.
@@ -29,8 +30,12 @@ public class PakExtract implements Runnable {
                 IntStream.range(0, pakHeader.getNumFiles()).parallel().forEach(frame -> {
                     try {
                         PakFile pakFile = PakFile.load(file, pakHeader.getStartPosition(), frame);
-                    } catch (IOException e) {
-                        System.err.println(e.getMessage());
+                        pakFile.extractTo(args.getOutput());
+                        if (!args.isQuiet()) {
+                            System.out.println(pakFile.getPath());
+                        }
+                    } catch (IOException | DataFormatException e) {
+                        e.printStackTrace();
                     }
                 });
             } catch (IOException e) {

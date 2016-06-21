@@ -1,5 +1,6 @@
 package com.github.ben_lei.dncli.pak.archive;
 
+import com.github.ben_lei.dncli.util.OsUtil;
 import org.apache.commons.io.IOUtils;
 
 import java.io.File;
@@ -7,6 +8,11 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.FileChannel;
+import java.nio.file.Files;
+import java.util.zip.DataFormatException;
+import java.util.zip.Inflater;
+
+import static java.nio.file.StandardOpenOption.*;
 
 /**
  * Created by blei on 6/19/16.
@@ -22,8 +28,8 @@ public class PakFile {
     private final File pakFile;
 
     private String path;
-    private long size;
-    private long compressedSize;
+    private int size;
+    private int compressedSize;
     private long dataPosition;
 
     /**
@@ -52,15 +58,17 @@ public class PakFile {
         byte[] pathBytes = new byte[PATH_BYTES];
 
         buffer.order(ByteOrder.LITTLE_ENDIAN);
-
         try {
             fileChannel = FileChannel.open(file.toPath());
             fileChannel.position(startPosition + META_BYTES * frame);
             fileChannel.read(buffer);
 
-            // path ends with '\0'
+            // flip the buffer to read from it
+            buffer.flip();
             buffer.get(pathBytes);
             thiz.path = new String(pathBytes);
+
+            // path ends with '\0'
             thiz.path = thiz.path.substring(0, thiz.path.indexOf('\0')).trim();
             thiz.size = buffer.getInt();
             thiz.compressedSize = buffer.getInt();
@@ -95,7 +103,7 @@ public class PakFile {
      *
      * @return the size
      */
-    public long getSize() {
+    public int getSize() {
         return size;
     }
 
@@ -104,7 +112,7 @@ public class PakFile {
      *
      * @return the compressed size
      */
-    public long getCompressedSize() {
+    public int getCompressedSize() {
         return compressedSize;
     }
 
@@ -115,5 +123,49 @@ public class PakFile {
      */
     public long getDataPosition() {
         return dataPosition;
+    }
+
+    public void extractTo(File outputDir) throws IOException, DataFormatException {
+        String absolutePath = OsUtil.isWindows() ? path : path.replace('\\', '/');
+        File absoluteFile = new File(outputDir, absolutePath);
+        File absoluteDir = absoluteFile.getParentFile();
+
+        // create all directories
+        absoluteDir.mkdirs();
+
+        FileChannel fileChannel = null;
+        try {
+            fileChannel = FileChannel.open(pakFile.toPath());
+            ByteBuffer buffer = fileChannel.map(FileChannel.MapMode.READ_ONLY, dataPosition, compressedSize); // it's already flipped
+            byte[] compressedBytes = new byte[compressedSize];
+            byte[] bytes = new byte[size];
+            Inflater inflater = new Inflater();
+
+            buffer.get(compressedBytes);
+
+            inflater.setInput(compressedBytes, 0, compressedSize);
+            inflater.inflate(bytes);
+            inflater.end();
+
+            Files.write(absoluteFile.toPath(), bytes, WRITE, CREATE, SYNC);
+        } finally {
+            IOUtils.closeQuietly(fileChannel);
+        }
+    }
+
+    /**
+     * <p>Returns a string representation of the pak file.</p>
+     *
+     * @return the string representation of the pak file
+     */
+    @Override
+    public String toString() {
+        return "PakFile{" +
+            "path='" + path + '\'' +
+            ", size=" + size +
+            ", compressedSize=" + compressedSize +
+            ", dataPosition=" + dataPosition +
+            ", pakFile=" + pakFile +
+            '}';
     }
 }
