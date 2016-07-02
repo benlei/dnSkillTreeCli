@@ -10,6 +10,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
 /**
@@ -34,6 +35,8 @@ public class DdsConverter implements Runnable {
             try {
                 ImageReader imageReader = ImageIO.getImageReadersBySuffix("dds").next();
                 FileImageInputStream imageInputStream = new FileImageInputStream(file);
+                Function<Integer, String> newExt = num -> args.getFormat().name();
+
                 BufferedImage image;
                 File output;
                 int maxImages;
@@ -41,16 +44,14 @@ public class DdsConverter implements Runnable {
                 imageReader.setInput(imageInputStream);
                 maxImages = imageReader.getNumImages(true);
 
-                if (maxImages == 1) {
-                    output = changeExt(file, args.getFormat().name());
-                    image = imageReader.read(0);
+                if (maxImages > 1) {
+                    newExt = num -> num + "." + args.getFormat().name();
+                }
+
+                for (int i = 0; i < maxImages; i++) {
+                    output = changeExt(file, newExt.apply(i));
+                    image = imageReader.read(i);
                     writeImage(image, output);
-                } else {
-                    for (int i = 0; i < maxImages; i++) {
-                        output = changeExt(file, i + "." + args.getFormat().name());
-                        image = imageReader.read(i);
-                        writeImage(image, output);
-                    }
                 }
             } catch (IOException e) {
                 System.err.println(e.getMessage());
