@@ -124,4 +124,22 @@ public class JsUtil {
 
         return jso;
     }
+
+    /**
+     * <p>Wraps invoke such that the exception is silent.</p>
+     *
+     * @param invocable the invocable object
+     * @param funcName  the function name
+     * @param args      the args for the function
+     * @return the return value of the function, or null if it fails
+     */
+    public static Object invoke(Invocable invocable, String funcName, Object... args) {
+        try {
+            return invocable.invokeFunction(funcName, args);
+        } catch (ScriptException | NoSuchMethodException e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
 }

@@ -4,7 +4,6 @@ import com.github.ben_lei.dncli.command.CommandPak;
 import com.github.ben_lei.dncli.pak.archive.PakFile;
 import com.github.ben_lei.dncli.pak.archive.PakHeader;
 import com.github.ben_lei.dncli.util.JsUtil;
-import jdk.nashorn.api.scripting.JSObject;
 
 import javax.script.Invocable;
 import javax.script.ScriptException;
@@ -12,6 +11,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.IntStream;
 import java.util.zip.DataFormatException;
 
@@ -29,45 +29,63 @@ public class PakExtract implements Runnable {
     public void run() {
         List<File> files = args.getFiles();
         File filterFile = args.getFilterFile();
-        Invocable invocable = null;
+        Function<PakFile, Boolean> filter = pakFile -> pakFile.getSize() != 0;
 
         if (filterFile != null) {
             try {
-                invocable = JsUtil.compileAndEval(filterFile);
+                Invocable invocable = JsUtil.compileAndEval(filterFile);
+                filter = pakFile -> (Boolean) JsUtil.invoke(invocable, "filter", JsUtil.reflect(pakFile));
             } catch (ScriptException | FileNotFoundException e) {
                 System.err.println(e.getMessage());
             }
         }
 
-        Invocable finalInvocable = invocable;
+        extractFiles(files, filter);
+    }
+
+    /**
+     * <p>Sets up a parallel stream to extract every pak in list.</p>
+     *
+     * @param files  the list of files
+     * @param filter the filter function
+     */
+    private void extractFiles(List<File> files, Function<PakFile, Boolean> filter) {
         files.parallelStream().forEach(file -> {
             try {
                 PakHeader pakHeader = PakHeader.from(file);
-                IntStream.range(0, pakHeader.getNumFiles()).parallel().forEach(frame -> {
-                    try {
-                        PakFile pakFile = PakFile.load(file, pakHeader.getStartPosition(), frame);
-                        boolean extractable = false;
+                long startPos = pakHeader.getStartPosition();
+                int numFiles = pakHeader.getNumFiles();
 
-                        if (finalInvocable == null) {
-                            if (pakFile.getSize() != 0) {
-                                extractable = true;
-                            }
-                        } else {
-                            JSObject jso = JsUtil.reflect(pakFile);
-                            extractable = (Boolean) finalInvocable.invokeFunction("filter", jso);
-                        }
-
-                        if (extractable) {
-                            pakFile.extractTo(args.getOutput());
-                            if (!args.isQuiet()) {
-                                System.out.println(pakFile.getPath());
-                            }
-                        }
-                    } catch (IOException | DataFormatException | NoSuchMethodException | ScriptException e) {
-                        System.err.println(e.getMessage());
-                    }
-                });
+                extractPakFiles(file, pakHeader, filter);
             } catch (IOException e) {
+                System.err.println(e.getMessage());
+            }
+        });
+    }
+
+    /**
+     * <p>Extracts all files in a pak archive concurrently.</p>
+     *
+     * @param file   the pak archive
+     * @param header the pak archive's header information
+     * @param filter the filter function
+     */
+    private void extractPakFiles(File file, PakHeader header, Function<PakFile, Boolean> filter) {
+        int numFiles = header.getNumFiles();
+        long startPos = header.getStartPosition();
+
+        IntStream.range(0, numFiles).parallel().forEach(frame -> {
+            try {
+                PakFile pakFile = PakFile.load(file, startPos, frame);
+                Boolean extractable = filter.apply(pakFile);
+
+                if (extractable != null && extractable) {
+                    pakFile.extractTo(args.getOutput());
+                    if (!args.isQuiet()) {
+                        System.out.println(pakFile.getPath());
+                    }
+                }
+            } catch (IOException | DataFormatException e) {
                 System.err.println(e.getMessage());
             }
         });
