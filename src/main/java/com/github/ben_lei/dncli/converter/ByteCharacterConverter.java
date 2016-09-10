@@ -23,11 +23,11 @@ public class ByteCharacterConverter implements IStringConverter<Long> {
         // throw exception if size is too big
         min = Integer.parseInt(value);
         if (c == 'k') {
-            min = Math.multiplyExact(min, 1024);
+            min = Math.multiplyExact(min, 1 << 10);
         } else if (c == 'm') {
-            min = Math.multiplyExact(min, 1024 * 1024);
+            min = Math.multiplyExact(min, 1 << 20);
         } else if (c == 'g') {
-            min = Math.multiplyExact(min, 1024 * 1024 * 1024);
+            min = Math.multiplyExact(min, 1 << 30);
         }
 
         return min;

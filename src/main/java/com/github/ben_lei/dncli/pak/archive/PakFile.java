@@ -1,5 +1,6 @@
 package com.github.ben_lei.dncli.pak.archive;
 
+import com.github.ben_lei.dncli.util.CompressUtil;
 import com.github.ben_lei.dncli.util.OsUtil;
 import org.apache.commons.io.IOUtils;
 
@@ -10,7 +11,6 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.FileChannel;
 import java.util.zip.DataFormatException;
-import java.util.zip.Inflater;
 
 /**
  * Created by blei on 6/19/16.
@@ -127,46 +127,12 @@ public class PakFile {
         String absolutePath = OsUtil.isWindows() ? path : path.replace('\\', '/');
         File absoluteFile = new File(outputDir, absolutePath);
         File absoluteDir = absoluteFile.getParentFile();
-        FileChannel fileChannel = null;
 
         // create all directories
         absoluteDir.mkdirs();
 
-        try {
-            fileChannel = FileChannel.open(pakFile.toPath());
-            ByteBuffer buffer = fileChannel.map(FileChannel.MapMode.READ_ONLY, dataPosition, compressedSize); // it's already flipped
-            byte[] compressedBytes = new byte[compressedSize];
-            byte[] bytes = new byte[size];
-            Inflater inflater = new Inflater();
-
-            buffer.get(compressedBytes);
-
-            // is deleted
-            if (size == 0) {
-                FileOutputStream out = new FileOutputStream(absoluteFile);
-                byte[] inflated = new byte[4096];
-                int read;
-
-                inflater.setInput(compressedBytes);
-
-                // unzip contents
-                while ((read = inflater.inflate(inflated)) != 0) {
-                    out.write(inflated, 0, read);
-                }
-
-                inflater.end();
-                out.close();
-            } else {
-                inflater.setInput(compressedBytes, 0, compressedSize);
-                inflater.inflate(bytes);
-                inflater.end();
-
-                FileOutputStream out = new FileOutputStream(absoluteFile);
-                out.write(bytes);
-                out.close();
-            }
-        } finally {
-            IOUtils.closeQuietly(fileChannel);
+        try (FileOutputStream out = new FileOutputStream(absoluteFile)) {
+            out.write(CompressUtil.decompress(pakFile, (int)dataPosition, compressedSize, size));
         }
     }
 

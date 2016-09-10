@@ -16,6 +16,13 @@ import static java.lang.System.exit;
  * Created by blei on 6/15/16.
  */
 public class CliApplication {
+    static {
+        try {
+            Class.forName("org.h2.Driver");
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
     public static void main(String[] args) {
         Command command = new Command();
         CommandPak pak = command.getPak();

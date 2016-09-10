@@ -9,6 +9,7 @@ import com.github.ben_lei.dncli.pak.PakDetail;
 import com.github.ben_lei.dncli.pak.PakExtract;
 
 import java.io.File;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -50,15 +51,11 @@ public class CommandPak {
         @Parameter(names = {"-o", "--output"}, description = "Output contents to provided file.", converter = FileConverter.class)
         private File output;
 
+        private OutputStream writer;
+
         @Parameter(names = {"-m", "--min"}, converter = ByteCharacterConverter.class,
             description = "Sets the min. size a compressed pak can be.")
         private Long min = 0L;
-
-        @Parameter(names = {"-f", "--force"}, description = "Force overwrite files")
-        private boolean force;
-
-        @Parameter(names = {"-q", "--quiet"}, description = "Quiet output")
-        private boolean quiet;
 
         public File getInput() {
             return input;
@@ -72,17 +69,17 @@ public class CommandPak {
             return min;
         }
 
-        public boolean isForce() {
-            return force;
-        }
-
-        public boolean isQuiet() {
-            return CommandPak.this.isQuiet() || quiet;
-        }
-
         @Override
         public void run() {
             runner.run();
+        }
+
+        public OutputStream getWriter() {
+            return writer;
+        }
+
+        public void setWriter(OutputStream writer) {
+            this.writer = writer;
         }
     }
 
