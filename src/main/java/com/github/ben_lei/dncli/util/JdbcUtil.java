@@ -16,6 +16,10 @@ public final class JdbcUtil {
     }
 
     public static Connection getConnection() {
+        return getConnection(null);
+    }
+
+    public static Connection getConnection(String initScript) {
         if (conn != null) {
             return conn;
         }
@@ -23,6 +27,9 @@ public final class JdbcUtil {
         try {
             String path = System.getProperty("jdbc.h2.file", File.createTempFile("jdbc", "h2").getPath());
             String jdbcUrl = String.format("jdbc:h2:file:%s;MODE=MYSQL;IGNORECASE=TRUE", path);
+            if (initScript != null) {
+                jdbcUrl += String.format(";INIT=RUNSCRIPT FROM 'classpath:%s'", initScript);
+            }
 
             System.out.println(jdbcUrl);
 

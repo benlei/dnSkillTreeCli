@@ -4,13 +4,11 @@ import com.github.ben_lei.dncli.command.CommandPak;
 import com.github.ben_lei.dncli.util.CompressUtil;
 import com.github.ben_lei.dncli.util.JdbcUtil;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 
 import java.io.*;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.Iterator;
 
 /**
@@ -47,18 +45,10 @@ public class PakCompress implements Runnable {
     private void compress(File input, long min) throws SQLException, IOException {
         Iterator<File> iterator = FileUtils.iterateFiles(input, null, true);
         int prefixLen = input.getPath().length();
-        Connection conn = JdbcUtil.getConnection();
+        Connection conn = JdbcUtil.getConnection("/pakCompressInit.sql");
         int numFiles = 0;
 
-        try {
-            Statement stmt = conn.createStatement();
-            stmt.execute(IOUtils.toString(getClass().getResourceAsStream("/pakCompressInit.sql"), "UTF-8"));
-            stmt.close();
-        } catch (Exception e) {
-            // ignore
-        }
-
-        PreparedStatement pStmt = conn.prepareStatement("INSERT INTO file " +
+        PreparedStatement stmt = conn.prepareStatement("INSERT INTO file " +
             "(path, file_size, zdata, zfile_size) VALUES (?, ?, ?, ?) " +
             "ON DUPLICATE KEY UPDATE file_size = ?, zdata = ?, zfile_size = ?");
 
@@ -69,19 +59,19 @@ public class PakCompress implements Runnable {
             int fileSize = (int)file.length();
             InputStream is = new ByteArrayInputStream(compressedBytes);
 
-            pStmt.setString(1, path);
-            pStmt.setInt(2, fileSize);
-            pStmt.setBlob(3, is);
-            pStmt.setInt(4, compressedBytes.length);
-            pStmt.setInt(5, fileSize);
-            pStmt.setBlob(6, is);
-            pStmt.setInt(7, compressedBytes.length);
+            stmt.setString(1, path);
+            stmt.setInt(2, fileSize);
+            stmt.setBlob(3, is);
+            stmt.setInt(4, compressedBytes.length);
+            stmt.setInt(5, fileSize);
+            stmt.setBlob(6, is);
+            stmt.setInt(7, compressedBytes.length);
 
-            pStmt.execute();
+            stmt.execute();
             numFiles++;
         }
 
-        pStmt.close();
+        stmt.close();
     }
 
     private void setWriter(File output) {
