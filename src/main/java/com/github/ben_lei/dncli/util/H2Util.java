@@ -24,7 +24,7 @@ public final class H2Util {
         }
 
         try {
-            path = System.getProperty("jdbc.h2.file", File.createTempFile("jdbc", "h2").getPath());
+            path = File.createTempFile("jdbc", "h2").getPath();
             String jdbcUrl = String.format("jdbc:h2:file:%s;MODE=MYSQL;IGNORECASE=TRUE", path);
             if (initScript != null) {
                 jdbcUrl += String.format(";INIT=RUNSCRIPT FROM 'classpath:%s'", initScript);
