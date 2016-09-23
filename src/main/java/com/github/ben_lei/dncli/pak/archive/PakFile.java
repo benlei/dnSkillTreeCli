@@ -16,12 +16,12 @@ import java.util.zip.DataFormatException;
  * Created by blei on 6/19/16.
  */
 public class PakFile {
-    private static final int PATH_BYTES = 256 + 4; // not sure what the +4 is for...
-    private static final int SIZE_BYTES = 4;
-    private static final int COMPRESSED_SIZE_BYTES = 4;
-    private static final int DATA_POSITION_BYTES = 4;
-    private static final int PADDING_BYTES = 44;
-    private static final int META_BYTES = PATH_BYTES + SIZE_BYTES + COMPRESSED_SIZE_BYTES + DATA_POSITION_BYTES + PADDING_BYTES;
+    public static final int PATH_BYTES = 256 + 4; // not sure what the +4 is for...
+    public static final int SIZE_BYTES = 4;
+    public static final int COMPRESSED_SIZE_BYTES = 4;
+    public static final int DATA_POSITION_BYTES = 4;
+    public static final int PADDING_BYTES = 44;
+    public static final int META_BYTES = PATH_BYTES + SIZE_BYTES + COMPRESSED_SIZE_BYTES + DATA_POSITION_BYTES + PADDING_BYTES;
 
     private final File pakFile;
 

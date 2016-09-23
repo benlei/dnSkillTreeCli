@@ -13,9 +13,9 @@ import java.util.Arrays;
  * Created by blei on 6/19/16.
  */
 public class PakHeader {
-    private static final byte[] START = "EyedentityGames Packing File 0.1".getBytes();
-    private static final int START_LEN = START.length;
-    private static final int RC_START = 260;
+    public static final byte[] START = "EyedentityGames Packing File 0.1".getBytes();
+    public static final int START_LEN = START.length;
+    public static final int RC_START = 260;
 
     private int numFiles;
     private int startPosition;

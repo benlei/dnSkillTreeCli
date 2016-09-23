@@ -1,5 +1,7 @@
 package com.github.ben_lei.dncli.util;
 
+import org.apache.commons.io.FileUtils;
+
 import java.io.File;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -8,15 +10,12 @@ import java.sql.SQLException;
 /**
  * Created by blei on 8/2/16.
  */
-public final class JdbcUtil {
+public final class H2Util {
     private static Connection conn;
+    private static String path;
 
-    private JdbcUtil() {
+    private H2Util() {
         // util class
-    }
-
-    public static Connection getConnection() {
-        return getConnection(null);
     }
 
     public static Connection getConnection(String initScript) {
@@ -25,16 +24,13 @@ public final class JdbcUtil {
         }
 
         try {
-            String path = System.getProperty("jdbc.h2.file", File.createTempFile("jdbc", "h2").getPath());
+            path = System.getProperty("jdbc.h2.file", File.createTempFile("jdbc", "h2").getPath());
             String jdbcUrl = String.format("jdbc:h2:file:%s;MODE=MYSQL;IGNORECASE=TRUE", path);
             if (initScript != null) {
                 jdbcUrl += String.format(";INIT=RUNSCRIPT FROM 'classpath:%s'", initScript);
             }
 
-            System.out.println(jdbcUrl);
-
             conn = DriverManager.getConnection(jdbcUrl, "sa", "sa");
-
             return conn;
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -48,6 +44,8 @@ public final class JdbcUtil {
             } catch (SQLException e) {
                 // do nothing
             }
+
+            FileUtils.deleteQuietly(new File(path));
         }
     }
 }
