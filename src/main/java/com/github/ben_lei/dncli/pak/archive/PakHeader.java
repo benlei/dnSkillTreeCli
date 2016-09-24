@@ -16,6 +16,7 @@ public class PakHeader {
     public static final byte[] START = "EyedentityGames Packing File 0.1".getBytes();
     public static final int START_LEN = START.length;
     public static final int RC_START = 260;
+    public static final int RC_BYTES = 8;
 
     private int numFiles;
     private int startPosition;

@@ -13,9 +13,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.Iterator;
 
 /**
@@ -27,6 +25,7 @@ public class PakCompress implements Runnable {
     private int largestBytes = PakFile.META_BYTES;
     private int files;
     private WritableByteChannel output;
+    private Connection conn;
 
     public PakCompress(CommandPak.Compress args) {
         this.args = args;
@@ -55,11 +54,10 @@ public class PakCompress implements Runnable {
     }
 
     private void collect(File input) throws SQLException, IOException {
-        Connection conn = H2Util.getConnection("/pakCompressInit.sql");
-        String query = ResourceUtil.read("/pakCompressCollect.sql");
         Iterator<File> iterator = FileUtils.iterateFiles(input, null, true);
         int prefixLen = input.getPath().length();
-
+        conn = H2Util.getConnection("/pakCompressInit.sql");
+        String query = ResourceUtil.read("/pakCompressCollect.sql");
         PreparedStatement stmt = conn.prepareStatement(query);
 
         while (iterator.hasNext()) {
@@ -85,7 +83,7 @@ public class PakCompress implements Runnable {
         stmt.close();
     }
 
-    private void compile() throws IOException {
+    private void compile() throws IOException, SQLException {
         ByteBuffer buf = ByteBuffer.allocateDirect(largestBytes);
         buf.order(ByteOrder.LITTLE_ENDIAN);
 
@@ -100,6 +98,45 @@ public class PakCompress implements Runnable {
         output.write(buf);
 
         // start writing the meta
+        Statement stmt = conn.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+        stmt.execute("SELECT * FROM file");
+        ResultSet rs = stmt.getResultSet();
+
+        int dataPosition = Math.addExact(PakHeader.RC_START + PakHeader.RC_BYTES,
+            Math.multiplyExact(PakFile.META_BYTES, files));
+
+        while (rs.next()) {
+            String path = rs.getString("path");
+            int fileSize = rs.getInt("file_size");
+            int zFileSize = rs.getInt("zfile_size");
+
+            buf.clear();
+            buf.put(path.getBytes());
+            buf.put(new byte[PakFile.PATH_BYTES - path.length()]); // fill rest with null terminating chars
+            buf.putInt(fileSize);
+            buf.putInt(zFileSize);
+            buf.putInt(dataPosition);
+            buf.put(new byte[44]); // 44 byte padding for some reason
+            buf.flip();
+
+            output.write(buf);
+
+            dataPosition += zFileSize;
+        }
+
+        // go back to beginning
+        rs.first();
+        do {
+            Blob blob = rs.getBlob("zdata");
+            int zFileSize = rs.getInt("zfile_size");
+            ByteBuffer dataBuffer = ByteBuffer.wrap(blob.getBytes(0, zFileSize));
+            blob.free(); // free the blob!
+
+            output.write(dataBuffer);
+        } while (rs.next());
+
+        rs.close();
+        stmt.close();
     }
 
     private void setWriter(File output) {

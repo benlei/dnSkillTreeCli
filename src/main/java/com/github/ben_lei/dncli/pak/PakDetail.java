@@ -55,7 +55,7 @@ public class PakDetail implements Runnable {
         for (int i = 0; i < header.getNumFiles(); i++) {
             try {
                 PakFile pakFile = PakFile.load(file, header.getStartPosition(), i);
-                String output = String.format("* %s (%d > %d)", pakFile.getPath(),
+                String output = String.format("%s (%d > %d)", pakFile.getPath(),
                     pakFile.getSize(),
                     pakFile.getCompressedSize());
 
