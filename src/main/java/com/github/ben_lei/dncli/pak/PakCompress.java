@@ -20,7 +20,7 @@ import java.util.Iterator;
  * Created by blei on 6/19/16.
  */
 public class PakCompress implements Runnable {
-
+    private static final int ROW_LIMIT = 100; // i think storing this many files 'in memory' is enough
     private final CommandPak.Compress args;
     private int largestBytes = PakFile.META_BYTES;
     private int files;
@@ -98,44 +98,62 @@ public class PakCompress implements Runnable {
         output.write(buf);
 
         // start writing the meta
-        Statement stmt = conn.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
-        stmt.execute("SELECT * FROM file");
-        ResultSet rs = stmt.getResultSet();
+        Statement stmt = conn.createStatement();
 
         int dataPosition = Math.addExact(PakHeader.RC_START + PakHeader.RC_BYTES,
             Math.multiplyExact(PakFile.META_BYTES, files));
 
-        while (rs.next()) {
-            String path = rs.getString("path");
-            int fileSize = rs.getInt("file_size");
-            int zFileSize = rs.getInt("zfile_size");
+        int offset = 0;
+        while (offset < files) {
+            stmt.execute("SELECT * FROM file LIMIT " + ROW_LIMIT + " OFFSET " + offset);
 
-            buf.clear();
-            buf.put(path.getBytes());
-            buf.put(new byte[PakFile.PATH_BYTES - path.length()]); // fill rest with null terminating chars
-            buf.putInt(fileSize);
-            buf.putInt(zFileSize);
-            buf.putInt(dataPosition);
-            buf.put(new byte[44]); // 44 byte padding for some reason
-            buf.flip();
+            ResultSet rs = stmt.getResultSet();
 
-            output.write(buf);
+            while (rs.next()) {
+                String path = rs.getString("path");
+                int fileSize = rs.getInt("file_size");
+                int zFileSize = rs.getInt("zfile_size");
 
-            dataPosition += zFileSize;
+                buf.clear();
+                buf.put(path.getBytes());
+                buf.put(new byte[PakFile.PATH_BYTES - path.length()]); // fill rest with null terminating chars
+                buf.putInt(fileSize);
+                buf.putInt(zFileSize);
+                buf.putInt(dataPosition);
+                buf.put(new byte[44]); // 44 byte padding for some reason
+                buf.flip();
+
+                output.write(buf);
+
+                dataPosition += zFileSize;
+            }
+
+            rs.close();
+
+            offset += ROW_LIMIT;
         }
 
         // go back to beginning
-        rs.first();
-        do {
-            Blob blob = rs.getBlob("zdata");
-            int zFileSize = rs.getInt("zfile_size");
-            ByteBuffer dataBuffer = ByteBuffer.wrap(blob.getBytes(0, zFileSize));
-            blob.free(); // free the blob!
+        offset = 0;
+        while (offset < files) {
+            stmt.execute("SELECT * FROM file LIMIT " + ROW_LIMIT + " OFFSET " + offset);
 
-            output.write(dataBuffer);
-        } while (rs.next());
+            ResultSet rs = stmt.getResultSet();
 
-        rs.close();
+            while (rs.next()) {
+                Blob blob = rs.getBlob("zdata");
+                int zFileSize = rs.getInt("zfile_size");
+                ByteBuffer dataBuffer = ByteBuffer.wrap(blob.getBytes(0, zFileSize));
+                blob.free(); // free the blob!
+
+                output.write(dataBuffer);
+            }
+
+            rs.close();
+
+            offset += ROW_LIMIT;
+        }
+
         stmt.close();
     }
 
