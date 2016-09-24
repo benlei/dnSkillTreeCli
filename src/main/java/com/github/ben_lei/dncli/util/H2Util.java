@@ -24,8 +24,13 @@ public final class H2Util {
         }
 
         try {
-            path = File.createTempFile("jdbc", "h2").getPath();
-            String jdbcUrl = String.format("jdbc:h2:file:%s;MODE=MYSQL;IGNORECASE=TRUE", path);
+            File tmp = File.createTempFile("dncli", "jdbc");
+            FileUtils.deleteQuietly(tmp);
+
+            path = tmp.getPath();
+            String jdbcUrl = String.format("jdbc:h2:file:%s;MODE=MYSQL;IGNORECASE=TRUE;MV_STORE=FALSE;MVCC=FALSE",
+                path);
+
             if (initScript != null) {
                 jdbcUrl += String.format(";INIT=RUNSCRIPT FROM 'classpath:%s'", initScript);
             }
@@ -34,6 +39,8 @@ public final class H2Util {
             return conn;
         } catch (Exception e) {
             throw new RuntimeException(e);
+        } finally {
+
         }
     }
 
@@ -45,7 +52,7 @@ public final class H2Util {
                 // do nothing
             }
 
-            FileUtils.deleteQuietly(new File(path));
+            FileUtils.deleteQuietly(new File(path + ".h2.db"));
         }
     }
 }
