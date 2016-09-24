@@ -46,10 +46,11 @@ public class PakCompress implements Runnable {
         try {
             collect(input);
             compile();
-        } catch (Throwable t) {
-            throw new RuntimeException(t);
-        } finally {
             H2Util.closeQuietly();
+        } catch (Throwable t) {
+            System.err.println(t.getMessage());
+            H2Util.closeQuietly();
+            System.exit(1);
         }
     }
 
@@ -117,7 +118,7 @@ public class PakCompress implements Runnable {
             Math.multiplyExact(PakFile.META_BYTES, files));
 
         buf.order(ByteOrder.LITTLE_ENDIAN);
-        
+
         while (offset < files) {
             stmt.execute("SELECT * FROM file LIMIT " + ROW_LIMIT + " OFFSET " + offset);
 
