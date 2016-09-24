@@ -20,7 +20,7 @@ import java.util.Iterator;
  * Created by blei on 6/19/16.
  */
 public class PakCompress implements Runnable {
-    private static final int ROW_LIMIT = 100; // i think storing this many files 'in memory' is enough
+    private static final int ROW_LIMIT = 10; // i think storing this many files 'in memory' is enough
     private final CommandPak.Compress args;
     private int largestBytes = PakFile.META_BYTES;
     private int files;
@@ -61,6 +61,10 @@ public class PakCompress implements Runnable {
         PreparedStatement stmt = conn.prepareStatement(query);
 
         while (iterator.hasNext()) {
+            if (files > 0 && files % ROW_LIMIT == 0) {
+                conn.commit();
+            }
+
             File file = iterator.next();
             String path = file.getPath().substring(prefixLen).replace('/', '\\');
             byte[] compressedBytes = CompressUtil.compress(file);
@@ -80,11 +84,12 @@ public class PakCompress implements Runnable {
             files++;
         }
 
+        conn.commit(); // always have something to commit
         stmt.close();
     }
 
     private void compile() throws IOException, SQLException {
-        ByteBuffer buf = ByteBuffer.allocateDirect(largestBytes);
+        ByteBuffer buf = ByteBuffer.allocate(largestBytes);
         buf.order(ByteOrder.LITTLE_ENDIAN);
 
         // write header
@@ -98,12 +103,21 @@ public class PakCompress implements Runnable {
         output.write(buf);
 
         // start writing the meta
-        Statement stmt = conn.createStatement();
+        compileMeta();
 
+        // go back to beginning
+        compileZData();
+    }
+
+    private void compileMeta() throws SQLException, IOException {
+        ByteBuffer buf = ByteBuffer.allocateDirect(largestBytes);
+        Statement stmt = conn.createStatement();
+        int offset = 0;
         int dataPosition = Math.addExact(PakHeader.RC_START + PakHeader.RC_BYTES,
             Math.multiplyExact(PakFile.META_BYTES, files));
 
-        int offset = 0;
+        buf.order(ByteOrder.LITTLE_ENDIAN);
+        
         while (offset < files) {
             stmt.execute("SELECT * FROM file LIMIT " + ROW_LIMIT + " OFFSET " + offset);
 
@@ -133,8 +147,14 @@ public class PakCompress implements Runnable {
             offset += ROW_LIMIT;
         }
 
-        // go back to beginning
-        offset = 0;
+        stmt.close();
+    }
+
+    private void compileZData() throws SQLException, IOException {
+        Statement stmt = conn.createStatement();
+        int lastZFileSize = 0;
+        int offset = 0;
+
         while (offset < files) {
             stmt.execute("SELECT * FROM file LIMIT " + ROW_LIMIT + " OFFSET " + offset);
 
@@ -147,6 +167,7 @@ public class PakCompress implements Runnable {
                 blob.free(); // free the blob!
 
                 output.write(dataBuffer);
+                lastZFileSize = zFileSize;
             }
 
             rs.close();
@@ -155,6 +176,10 @@ public class PakCompress implements Runnable {
         }
 
         stmt.close();
+
+        if (lastZFileSize < args.getMin()) {
+            output.write(ByteBuffer.allocate((int) (args.getMin() - lastZFileSize)));
+        }
     }
 
     private void setWriter(File output) {
