@@ -45,7 +45,6 @@ public class CliApplication {
 
         //dnt subcommand setup
         dntJc.addCommand("-q", dnt.getQuery(), "--query");
-        dntJc.addCommand("-b", dnt.getBuild(), "--build");
 
         // dds command setup
         jc.addCommand("dds", dds);
@@ -93,10 +92,6 @@ public class CliApplication {
                         case "-q":
                         case "--query":
                             dnt.getQuery().run();
-                            break;
-                        case "-b":
-                        case "--build":
-                            dnt.getBuild().run();
                             break;
                         default:
                             throw new UnsupportedOperationException("Unknown dnt command: '" + dntJc.getParsedCommand() + "'");
