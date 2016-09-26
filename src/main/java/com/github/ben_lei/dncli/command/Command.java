@@ -10,7 +10,7 @@ public class Command {
     private final CommandDnt dnt = new CommandDnt();
     private final CommandPak pak = new CommandPak();
 
-    @Parameter(names = {"-h", "--help"}, description = "Displays this usage.", help = true)
+    @Parameter(names = "-help", description = "Displays this usage.", help = true)
     private boolean help;
 
     public boolean isHelp() {

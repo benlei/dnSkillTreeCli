@@ -36,15 +36,15 @@ public class CliApplication {
         JCommander pakJc = addCommand(jc, "pak", pak);
 
         // pak subcommand setup
-        pakJc.addCommand("-c", pak.getCompress(), "--compress");
-        pakJc.addCommand("-x", pak.getExtract(), "--extract");
-        pakJc.addCommand("-l", pak.getDetail(), "--list");
+        pakJc.addCommand("-compress", pak.getCompress());
+        pakJc.addCommand("-extract", pak.getExtract());
+        pakJc.addCommand("-list", pak.getDetail());
 
         // dnt command setup
         JCommander dntJc = addCommand(jc, "dnt", dnt);
 
         //dnt subcommand setup
-        dntJc.addCommand("-q", dnt.getQuery(), "--query");
+        dntJc.addCommand("-query", dnt.getQuery());
 
         // dds command setup
         jc.addCommand("dds", dds);
@@ -70,16 +70,13 @@ public class CliApplication {
             switch (parsedCommand) {
                 case "pak":
                     switch (pakJc.getParsedCommand()) {
-                        case "-c":
-                        case "--compress":
+                        case "-compress":
                             pak.getCompress().run();
                             break;
-                        case "-x":
-                        case "--extract":
+                        case "-extract":
                             pak.getExtract().run();
                             break;
-                        case "-l":
-                        case "--list":
+                        case "-list":
                             pak.getDetail().run();
                             break;
                         default:
@@ -89,8 +86,7 @@ public class CliApplication {
                     break;
                 case "dnt":
                     switch (dntJc.getParsedCommand()) {
-                        case "-q":
-                        case "--query":
+                        case "-query":
                             dnt.getQuery().run();
                             break;
                         default:

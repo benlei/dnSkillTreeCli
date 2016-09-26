@@ -22,7 +22,7 @@ public class CommandPak {
     private final Extract extract = new Extract();
     private final Detail detail = new Detail();
 
-    @Parameter(names = {"-q", "--quiet"}, description = "Quiet output")
+    @Parameter(names = "-quiet", description = "Quiet output")
     private boolean quiet;
 
     public boolean isQuiet() {
@@ -45,15 +45,17 @@ public class CommandPak {
     public class Compress implements Runnable {
         private final Runnable runner = new PakCompress(this);
 
-        @Parameter(names = {"-i", "--input"}, description = "Input root \"\\\" directory.", converter = FileConverter.class, required = true)
+        @Parameter(names = "-input", description = "Input root \"\\\" directory.",
+                converter = FileConverter.class, required = true)
         private File input;
 
-        @Parameter(names = {"-o", "--output"}, description = "Output contents to provided file.", converter = FileConverter.class)
+        @Parameter(names = "-output", description = "Output contents to provided file.",
+                converter = FileConverter.class)
         private File output;
 
         private OutputStream writer;
 
-        @Parameter(names = {"-m", "--min"}, converter = ByteCharacterConverter.class,
+        @Parameter(names = "-min", converter = ByteCharacterConverter.class,
             description = "Sets the min. size a compressed pak can be.")
         private Long min = 0L;
 
@@ -90,17 +92,19 @@ public class CommandPak {
         @Parameter(description = "pakFiles...")
         private List<File> files = new ArrayList<>();
 
-        @Parameter(names = {"-o", "--output"}, description = "Output directory to extract the paks.", converter = FileConverter.class, required = true)
+        @Parameter(names = "-output", description = "Output directory to extract the paks.",
+                converter = FileConverter.class, required = true)
         private File output;
 
-        @Parameter(names = {"-j", "--javascript"}, description = "The filter JS file that should have a pakCompressFilter() function.",
+        @Parameter(names = "-js", description = "The filter JS file that should have a " +
+                "pakCompressFilter() function.",
             converter = FileConverter.class)
         private File filterFile;
 
-        @Parameter(names = {"-f", "--force"}, description = "Force overwrite files")
+        @Parameter(names = "-force", description = "Force overwrite files")
         private boolean force;
 
-        @Parameter(names = {"-q", "--quiet"}, description = "Quiet output")
+        @Parameter(names = "-quiet", description = "Quiet output")
         private boolean quiet;
 
         public List<File> getFiles() {
@@ -133,7 +137,7 @@ public class CommandPak {
     public class Detail implements Runnable {
         private final Runnable runner = new PakDetail(this);
 
-        @Parameter(names = {"-q", "--quiet"}, description = "Quiet output")
+        @Parameter(names = "-quiet", description = "Quiet output")
         private boolean quiet;
 
         @Parameter(description = "pakFiles...")

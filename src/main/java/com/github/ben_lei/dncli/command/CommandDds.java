@@ -18,16 +18,16 @@ import java.util.List;
 public class CommandDds implements Runnable {
     private final Runnable runner = new DdsConverter(this);
 
-    @Parameter(names = {"-f", "--force"}, description = "Forces overwriting of " +
+    @Parameter(names = "-force", description = "Forces overwriting of " +
         "converted file without confirmation")
     private boolean force;
 
-    @Parameter(names = {"-m", "--format"}, description = "The output file format. " +
+    @Parameter(names = "-format", description = "The output file format. " +
         "Valid options are png and jpg.", converter = DdsOutputFormatConverter.class,
         required = true)
     private DdsOutputFormat format;
 
-    @Parameter(names = {"-q", "--quiet"}, description = "Quiet output")
+    @Parameter(names = "-quiet", description = "Quiet output")
     private boolean quiet;
 
     @Parameter(description = "ddsFiles...", converter = FileConverter.class)

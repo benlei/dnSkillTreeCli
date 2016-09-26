@@ -15,7 +15,7 @@ import java.util.List;
 public class CommandDnt {
     private final Query query = new Query();
 
-    @Parameter(names = {"-q", "--quiet"}, description = "Quiet output")
+    @Parameter(names = "-quiet", description = "Quiet output")
     private boolean quiet;
 
     public Query getQuery() {
@@ -30,11 +30,11 @@ public class CommandDnt {
     public class Query implements Runnable {
         private final Runnable runner = new DntQuery(this);
 
-        @Parameter(names = {"-j", "--javascript"}, description = "The query JS file that should just have a query() function.",
-            converter = FileConverter.class, required = true)
+        @Parameter(names = "-js", description = "The query JS file that should just have a " +
+                "query() function.", converter = FileConverter.class, required = true)
         private File queryFile;
 
-        @Parameter(names = {"-q", "--quiet"}, description = "Quiet output")
+        @Parameter(names = "-quiet", description = "Quiet output")
         private boolean quiet;
 
         @Parameter(description = "dntFiles...", required = true)
