@@ -130,7 +130,7 @@ public class PakFile {
    * <p>Extracts pak file to an output directory.</p>
    *
    * @param outputDir the output directory
-   * @throws IOException if there was a file error
+   * @throws IOException         if there was a file error
    * @throws DataFormatException if there was a decompression error
    */
   public void extractTo(File outputDir) throws IOException, DataFormatException {
@@ -139,7 +139,7 @@ public class PakFile {
     File absoluteDir = absoluteFile.getParentFile();
 
     // create all directories
-    if (! absoluteDir.mkdirs()) {
+    if (!absoluteDir.mkdirs()) {
       throw new RuntimeException("Could not create directory " + absoluteDir.getPath());
     }
 

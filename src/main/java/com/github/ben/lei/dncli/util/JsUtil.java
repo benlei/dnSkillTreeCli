@@ -9,7 +9,6 @@ import java.io.InputStreamReader;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
-
 import javax.script.Compilable;
 import javax.script.CompiledScript;
 import javax.script.Invocable;

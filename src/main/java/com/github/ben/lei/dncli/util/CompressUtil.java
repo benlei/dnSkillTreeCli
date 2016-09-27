@@ -47,11 +47,11 @@ public final class CompressUtil {
    * <p>Decompresses a the content of a file from {@code startPosition} of {@code compressedSize}
    * and return the bytes of it.</p>
    *
-   * @param file the file
-   * @param startPosition   the start position
+   * @param file           the file
+   * @param startPosition  the start position
    * @param compressedSize the compresse
    * @return the decompressed bytes
-   * @throws IOException if there was any io issues
+   * @throws IOException         if there was any io issues
    * @throws DataFormatException if there was an issue decompressing content
    */
   public static byte[] decompress(File file, int startPosition, int compressedSize)
@@ -86,12 +86,12 @@ public final class CompressUtil {
    * and return the bytes of it. If a {@code compressedSize} can be provided if it is known
    * how large the decompressed content will be.</p>
    *
-   * @param file the file
-   * @param startPosition   the start position
-   * @param compressedSize the compresse
+   * @param file             the file
+   * @param startPosition    the start position
+   * @param compressedSize   the compresse
    * @param decompressedSize the decompressed size
    * @return the decompressed bytes
-   * @throws IOException if there was any io issues
+   * @throws IOException         if there was any io issues
    * @throws DataFormatException if there was an issue decompressing content
    */
   public static byte[] decompress(File file,

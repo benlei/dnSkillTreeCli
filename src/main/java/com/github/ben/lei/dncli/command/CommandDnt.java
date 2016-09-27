@@ -1,10 +1,10 @@
 package com.github.ben.lei.dncli.command;
 
+import com.github.ben.lei.dncli.dnt.DntQuery;
+
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 import com.beust.jcommander.converters.FileConverter;
-import com.github.ben.lei.dncli.dnt.DntQuery;
-
 import lombok.Getter;
 
 import java.io.File;
