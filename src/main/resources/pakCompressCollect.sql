@@ -1,1 +1,0 @@
-INSERT INTO file (path, file_size, zdata, zfile_size) VALUES (?, ?, ?, ?)

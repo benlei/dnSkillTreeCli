@@ -5,7 +5,6 @@ import com.dnmaze.dncli.pak.archive.PakFile;
 import com.dnmaze.dncli.pak.archive.PakHeader;
 import com.dnmaze.dncli.util.CompressUtil;
 import com.dnmaze.dncli.util.H2Util;
-import com.dnmaze.dncli.util.ResourceUtil;
 
 import org.apache.commons.io.FileUtils;
 
@@ -66,7 +65,7 @@ public class PakCompress implements Runnable {
     Iterator<File> iterator = FileUtils.iterateFiles(input, null, true);
     int prefixLen = input.getPath().length();
     conn = H2Util.getConnection("/pakCompressInit.sql");
-    String query = ResourceUtil.read("/pakCompressCollect.sql");
+    String query = "INSERT INTO file (path, file_size, zdata, zfile_size) VALUES (?, ?, ?, ?)";
     try (PreparedStatement stmt = conn.prepareStatement(query)) {
 
       while (iterator.hasNext()) {
