@@ -35,10 +35,20 @@ public class CommandDnt {
     private File queryFile;
 
     @Getter
-    @Parameter(names = "-messages",
+    @Parameter(names = "-uistring",
         description = "The uistring.xml file that can be loaded for the query() method.",
         converter = FileConverter.class)
     private File messageFile;
+
+    @Getter
+    @Parameter(names = "-fresh",
+        description = "Deletes ALL found normalized tables before inserting.")
+    private boolean fresh;
+
+    @Getter
+    @Parameter(names = "-completed",
+        description = "Only performs the complete() method.")
+    private boolean complete;
 
     @Getter
     @Parameter(description = "dntFiles...", required = true)

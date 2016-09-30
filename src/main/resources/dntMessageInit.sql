@@ -1,4 +1,4 @@
-CREATE TABLE %1$s (
-    `%1$s_id` INTEGER PRIMARY KEY,
-    `message` VARCHAR(512)
+CREATE TABLE IF NOT EXISTS %s (
+    %s INTEGER PRIMARY KEY,
+    _String TEXT
 );

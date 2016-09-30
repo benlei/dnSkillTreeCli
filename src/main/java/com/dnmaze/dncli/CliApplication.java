@@ -71,9 +71,16 @@ public class CliApplication {
 
     // find out what command is being used
     try {
+
       switch (parsedCommand) {
         case "pak":
-          switch (pakJc.getParsedCommand()) {
+          String pakCommand = dntJc.getParsedCommand();
+          if (pakCommand == null) {
+            jc.usage();
+            System.exit(1);
+          }
+
+          switch (pakCommand) {
             case "-compress":
               pak.getCompress().run();
               break;
@@ -85,18 +92,24 @@ public class CliApplication {
               break;
             default:
               throw new UnsupportedOperationException("Unknown pak command: '"
-                  + pakJc.getParsedCommand() + "'");
+                                                      + pakCommand + "'");
           }
 
           break;
         case "dnt":
-          switch (dntJc.getParsedCommand()) {
+          String dntCommand = dntJc.getParsedCommand();
+          if (dntCommand == null) {
+            jc.usage();
+            System.exit(1);
+          }
+
+          switch (dntCommand) {
             case "-query":
               dnt.getQuery().run();
               break;
             default:
               throw new UnsupportedOperationException("Unknown dnt command: '"
-                  + dntJc.getParsedCommand() + "'");
+                                                      + dntCommand + "'");
           }
 
           break;
