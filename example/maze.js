@@ -1,3 +1,21 @@
+var fetch = function(rs) {
+    var rsmd = rs.getMetaData();
+    var cols = rsmd.getColumnCount();
+    var dict = {};
+
+    for (var i = 0; i < cols; i++) {
+        var name = rsmd.getColumnName(i + 1);
+
+        if (name.charAt(0) == '_') {
+            name = name.substring(1);
+        }
+
+        dict[name] = rs.getObject(i + 1);
+    }
+
+    return dict;
+};
+
 var normalizeName = function (name) {
     if (name == 'uistring') {
         return 'message';
@@ -28,7 +46,8 @@ var complete = function () {
     var rs = stmt.executeQuery(QUERY_GET_ALL_JOBS);
 
     while (rs.next()) {
-        java.lang.System.out.println(rs.getInt("_JobId") + " = " + rs.getString("_EnglishName"));
+        var row = fetch(rs);
+        java.lang.System.out.println(row['JobID'] + " = " + row["EnglishName"]);
     }
 
     connection.close();
