@@ -9,7 +9,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.List;
-import java.util.function.Function;
 import java.util.stream.IntStream;
 import java.util.zip.DataFormatException;
 import javax.script.Invocable;
@@ -29,14 +28,14 @@ public class PakExtract implements Runnable {
   public void run() {
     List<File> files = args.getFiles();
     File filterFile = args.getFilterFile();
-    Function<PakFile, Boolean> filter = pakFile -> pakFile.getSize() != 0;
+    PakFilter filter = new PakFilterImpl();
 
     if (filterFile != null) {
       try {
-        Invocable invocable = JsUtil.compileAndEval(filterFile);
-        filter = pakFile -> (Boolean) JsUtil.invoke(invocable, "filter", JsUtil.reflect(pakFile));
+        Invocable js = JsUtil.compileAndEval(filterFile);
+        filter = js.getInterface(PakFilter.class);
       } catch (ScriptException | FileNotFoundException ex) {
-        System.err.println(ex.getMessage());
+        throw new RuntimeException(ex.getMessage());
       }
     }
 
@@ -49,7 +48,7 @@ public class PakExtract implements Runnable {
    * @param files  the list of files
    * @param filter the filter function
    */
-  private void extractFiles(List<File> files, Function<PakFile, Boolean> filter) {
+  private void extractFiles(List<File> files, PakFilter filter) {
     files.parallelStream().forEach(file -> {
       try {
         PakHeader pakHeader = PakHeader.from(file);
@@ -67,17 +66,18 @@ public class PakExtract implements Runnable {
    * @param header the pak archive's header information
    * @param filter the filter function
    */
-  private void extractPakFiles(File file, PakHeader header, Function<PakFile, Boolean> filter) {
+  private void extractPakFiles(File file, PakHeader header, PakFilter filter) {
     int numFiles = header.getNumFiles();
     long startPos = header.getStartPosition();
 
     IntStream.range(0, numFiles).parallel().forEach(frame -> {
       try {
         PakFile pakFile = PakFile.load(file, startPos, frame);
-        Boolean extractable = filter.apply(pakFile);
+        boolean extractable = filter.filter(pakFile);
 
-        if (extractable != null && extractable) {
+        if (extractable) {
           pakFile.extractTo(args.getOutput());
+
           if (!args.isQuiet()) {
             System.out.println(pakFile.getPath());
           }
@@ -86,5 +86,12 @@ public class PakExtract implements Runnable {
         System.err.println(ex.getMessage());
       }
     });
+  }
+
+  private static class PakFilterImpl implements PakFilter {
+    @Override
+    public boolean filter(PakFile pakFile) {
+      return pakFile.getSize() != 0;
+    }
   }
 }

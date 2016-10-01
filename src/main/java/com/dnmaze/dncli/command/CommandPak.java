@@ -4,6 +4,7 @@ import com.dnmaze.dncli.converter.ByteCharacterConverter;
 import com.dnmaze.dncli.pak.PakCompress;
 import com.dnmaze.dncli.pak.PakDetail;
 import com.dnmaze.dncli.pak.PakExtract;
+import com.dnmaze.dncli.pak.PakInflate;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
@@ -29,6 +30,9 @@ public class CommandPak {
 
   @Getter
   private final Detail detail = new Detail();
+
+  @Getter
+  private final Inflate inflate = new Inflate();
 
   @Parameters(commandDescription = "Compresses a directory into a pak file.")
   public static class Compress implements Runnable {
@@ -108,6 +112,28 @@ public class CommandPak {
 
     @Getter
     @Parameter(description = "pakFiles...")
+    private List<File> files = new ArrayList<>();
+
+    @Override
+    public void run() {
+      runner.run();
+    }
+  }
+
+  @Parameters(commandDescription = "Inflates all pak files to a certain size. Technically, "
+                                   + "this is a general file inflater.")
+  public static class Inflate implements Runnable {
+    private final Runnable runner = new PakInflate(this);
+
+    @Getter
+    @Parameter(names = "-size",
+        converter = ByteCharacterConverter.class,
+        description = "Sets the min. size all paks should be.")
+    private Long size = 0L;
+
+
+    @Getter
+    @Parameter(description = "pakFiles...", required = true)
     private List<File> files = new ArrayList<>();
 
     @Override

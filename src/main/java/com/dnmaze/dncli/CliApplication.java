@@ -40,6 +40,7 @@ public class CliApplication {
     // pak subcommand setup
     pakJc.addCommand("-compress", pak.getCompress());
     pakJc.addCommand("-extract", pak.getExtract());
+    pakJc.addCommand("-inflate", pak.getInflate());
     pakJc.addCommand("-list", pak.getDetail());
 
     // dnt command setup
@@ -72,7 +73,6 @@ public class CliApplication {
 
     // find out what command is being used
     try {
-
       switch (parsedCommand) {
         case "pak":
           String pakCommand = dntJc.getParsedCommand();
@@ -87,6 +87,9 @@ public class CliApplication {
               break;
             case "-extract":
               pak.getExtract().run();
+              break;
+            case "-inflate":
+              pak.getInflate().run();
               break;
             case "-list":
               pak.getDetail().run();

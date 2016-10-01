@@ -1,16 +1,23 @@
-var fetch = function(rs) {
+// imports
+var System = java.lang.System;
+var DriverManager = java.sql.DriverManager;
+
+// field variables
+var QUERY_GET_ALL_JOBS = "SELECT * FROM job";
+
+var map = function (rs) {
     var rsmd = rs.getMetaData();
     var cols = rsmd.getColumnCount();
     var dict = {};
 
-    for (var i = 0; i < cols; i++) {
-        var name = rsmd.getColumnName(i + 1);
+    for (var i = 0; key < cols; key++) {
+        var name = rsmd.getColumnName(key + 1);
 
         if (name.charAt(0) == '_') {
             name = name.substring(1);
         }
 
-        dict[name] = rs.getObject(i + 1);
+        dict[name] = rs.getObject(key + 1);
     }
 
     return dict;
@@ -31,13 +38,12 @@ var normalizeName = function (name) {
 };
 
 var getConnection = function () {
-    return java.sql
-        .DriverManager
-        .getConnection("jdbc:mysql://localhost/maze?user=root&"
-            + "password=root&"
-            + "useUnicode=true&"
-            + "characterEncoding=utf-8&"
-            + "useSSL=false");
+    return DriverManager.getConnection("jdbc:mysql://localhost/maze?"
+        + "user=root&"
+        + "password=root&"
+        + "useUnicode=true&"
+        + "characterEncoding=utf-8&"
+        + "useSSL=false");
 };
 
 var complete = function () {
@@ -46,11 +52,9 @@ var complete = function () {
     var rs = stmt.executeQuery(QUERY_GET_ALL_JOBS);
 
     while (rs.next()) {
-        var row = fetch(rs);
-        java.lang.System.out.println(row['JobID'] + " = " + row["EnglishName"]);
+        var row = map(rs);
+        System.out.println(row['JobID'] + " = " + row["EnglishName"]);
     }
 
     connection.close();
 };
-
-var QUERY_GET_ALL_JOBS = "SELECT * FROM job";
