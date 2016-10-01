@@ -1,5 +1,6 @@
 package com.dnmaze.dncli.command;
 
+import com.dnmaze.dncli.dnt.DntExecute;
 import com.dnmaze.dncli.dnt.DntQuery;
 
 import com.beust.jcommander.Parameter;
@@ -18,6 +19,9 @@ public class CommandDnt {
   @Getter
   private final Query query = new Query();
 
+  @Getter
+  private final Execute execute = new Execute();
+
   @Parameters
   public static class Query implements Runnable {
     private final Runnable runner = new DntQuery(this);
@@ -32,7 +36,7 @@ public class CommandDnt {
                       + "propagated.",
         converter = FileConverter.class,
         required = true)
-    private File queryFile;
+    private File jsFile;
 
     @Getter
     @Parameter(names = "-uistring",
@@ -46,12 +50,28 @@ public class CommandDnt {
     private boolean fresh;
 
     @Getter
-    @Parameter(names = "-completed",
-        description = "Only performs the complete() method.")
-    private boolean complete;
+    @Parameter(description = "dntFiles...", required = true)
+    private List<File> inputs;
+
+    @Override
+    public void run() {
+      runner.run();
+    }
+  }
+
+  @Parameters
+  public static class Execute implements Runnable {
+    private final Runnable runner = new DntExecute(this);
 
     @Getter
-    @Parameter(description = "dntFiles...", required = true)
+    @Parameter(description = "The query JS file that must have 3 functions defined: "
+                             + "normalizeName(java.lang.String) for normalizing table names, "
+                             + "getConnection() that should return a java.sql.Connection for this "
+                             + "program to use to re-create tables and propagate data, and "
+                             + "complete() for performing any tasks after all DNT data has been "
+                             + "propagated. The first parameter specified will be assumed to be "
+                             + "the input.",
+        required = true)
     private List<File> inputs;
 
     @Override

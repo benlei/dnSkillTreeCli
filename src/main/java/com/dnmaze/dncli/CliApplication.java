@@ -48,6 +48,7 @@ public class CliApplication {
 
     //dnt subcommand setup
     dntJc.addCommand("-query", dnt.getQuery());
+    dntJc.addCommand("-execute", dnt.getExecute());
 
     // dds command setup
     CommandDds dds = command.getDds();
@@ -106,6 +107,9 @@ public class CliApplication {
           switch (dntCommand) {
             case "-query":
               dnt.getQuery().run();
+              break;
+            case "-execute":
+              dnt.getExecute().run();
               break;
             default:
               throw new UnsupportedOperationException("Unknown dnt command: '"

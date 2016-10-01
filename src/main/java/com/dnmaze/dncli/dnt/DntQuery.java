@@ -13,6 +13,8 @@ import com.dnmaze.dncli.util.ResourceUtil;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import lombok.Cleanup;
 import lombok.SneakyThrows;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.w3c.dom.CharacterData;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -50,22 +52,40 @@ public class DntQuery implements Runnable {
   @Override
   public void run() {
     try {
-      Invocable js = JsUtil.compileAndEval(args.getQueryFile());
+      Invocable js = JsUtil.compileAndEval(args.getJsFile());
       dnt = js.getInterface(Dnt.class);
     } catch (Exception ex) {
       throw new RuntimeException(ex.getMessage());
     }
 
-    if (!args.isComplete()) {
-      File messageFile = args.getMessageFile();
-      if (messageFile != null) {
-        createMessageTable(messageFile);
-      }
-
-      args.getInputs().forEach(this::createTables);
+    File messageFile = args.getMessageFile();
+    if (messageFile != null) {
+      createMessageTable(messageFile);
     }
 
+    args.getInputs().forEach(this::createTables);
+
     dnt.complete();
+  }
+
+  private Pair<String, String> getNameIdPair(File file) {
+    if (file.length() < 10) {
+      throw new RuntimeException(file.getPath() + " is not a valid DNT file.");
+    }
+
+    String tableName = StringUtils.capitalize(dnt.normalizeName(stripExtension(file)));
+
+    if (tableName == null) {
+      String stripped = StringUtils.capitalize(stripExtension(file));
+      System.err.println(file.getPath() + " has no normalized name, using '" + stripped + "'");
+      tableName = stripped;
+    }
+
+    if (!StringUtils.isAlphanumeric(tableName)) {
+      throw new RuntimeException(tableName + " is not alphanumeric!");
+    }
+
+    return Pair.of(tableName, "_" + tableName + "ID");
   }
 
   @SuppressFBWarnings
@@ -75,32 +95,24 @@ public class DntQuery implements Runnable {
       })
   @SneakyThrows
   private void createMessageTable(File file) {
-    String messageName = dnt.normalizeName(stripExtension(file));
-
-    if (messageName == null) {
-      String stripped = stripExtension(file);
-      System.err.println(file.getPath() + " has no normalized name, using '" + stripped + "'");
-      messageName = stripped;
-    }
-
-    String messageId = "_" + messageName + "ID";
+    Pair<String, String> nameIdPair = getNameIdPair(file);
 
     String createTableQuery = String.format(ResourceUtil.read("/dntMessageInit.sql"),
-        messageName, messageId);
+        nameIdPair.getKey(), nameIdPair.getValue());
 
     @Cleanup Connection connection = dnt.getConnection();
     connection.setAutoCommit(false);
 
     if (args.isFresh()) {
-      deleteTableOnce(connection, messageName);
+      deleteTableOnce(connection, nameIdPair.getKey());
     }
 
     Statement stmt = connection.createStatement();
     stmt.execute(createTableQuery);
 
     PreparedStatement pstmt =
-        connection.prepareStatement(String.format("INSERT INTO %s (%s, message) "
-                                                  + "VALUES (?, ?)", messageName, messageId));
+        connection.prepareStatement(String.format("INSERT INTO %s (%s, message) VALUES (?, ?)",
+            nameIdPair.getKey(), nameIdPair.getValue()));
 
     Document document = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(file);
     document.getDocumentElement().normalize();
@@ -133,24 +145,12 @@ public class DntQuery implements Runnable {
       })
   @SneakyThrows
   private void createTables(File file) {
-    if (file.length() < 10) {
-      throw new RuntimeException(file.getPath() + " is not a valid DNT file.");
-    }
+    Pair<String, String> nameIdPair = getNameIdPair(file);
 
     FileChannel fileChannel = FileChannel.open(file.toPath());
     ByteBuffer buf = fileChannel.map(FileChannel.MapMode.READ_ONLY, 4, file.length() - 4);
 
     buf.order(ByteOrder.LITTLE_ENDIAN);
-
-    String tableName = dnt.normalizeName(stripExtension(file));
-
-    if (tableName == null) {
-      String stripped = stripExtension(file);
-      System.err.println(file.getPath() + " has no normalized name, using '" + stripped + "'");
-      tableName = stripped;
-    }
-
-    String tableId = "_" + tableName + "ID";
 
     final int numCols = buf.getShort();
     final int numRows = buf.getInt();
@@ -186,13 +186,13 @@ public class DntQuery implements Runnable {
       }
     }
 
-    String createQuery = createCreateQuery(tableName, tableId, columnNames, dntColumns);
-    String insertQuery = createInsertQuery(tableName, tableId, columnNames);
+    String createQuery = createCreateQuery(nameIdPair, columnNames, dntColumns);
+    String insertQuery = createInsertQuery(nameIdPair, columnNames);
     @Cleanup Connection connection = dnt.getConnection();
     connection.setAutoCommit(false);
 
     if (args.isFresh()) {
-      deleteTableOnce(connection, tableName);
+      deleteTableOnce(connection, nameIdPair.getKey());
     }
 
     Statement stmt = connection.createStatement();
@@ -234,16 +234,15 @@ public class DntQuery implements Runnable {
     stmt.close();
   }
 
-  private String createCreateQuery(String tableName,
-                                   String tableId,
+  private String createCreateQuery(Pair<String, String> nameIdPair,
                                    List<String> columnNames,
                                    List<DntColumn> dntColumns) {
     int size = columnNames.size();
     StringBuilder builder = new StringBuilder("CREATE TABLE IF NOT EXISTS ");
     builder
-        .append(tableName)
+        .append(nameIdPair.getKey())
         .append(" (")
-        .append(tableId)
+        .append(nameIdPair.getValue())
         .append(" INTEGER PRIMARY KEY");
 
     for (int i = 0; i < size; i++) {
@@ -260,10 +259,13 @@ public class DntQuery implements Runnable {
     return builder.append(')').toString();
   }
 
-  private String createInsertQuery(String tableName,
-                                   String tableId,
+  private String createInsertQuery(Pair<String, String> nameIdPair,
                                    List<String> columnNames) {
-    StringBuilder frontBuilder = new StringBuilder("INSERT INTO " + tableName + " (" + tableId);
+    StringBuilder frontBuilder = new StringBuilder("INSERT INTO "
+                                                   + nameIdPair.getKey()
+                                                   + " ("
+                                                   + nameIdPair.getValue());
+
     StringBuilder backBuilder = new StringBuilder("(?");
 
     for (String columnName : columnNames) {
