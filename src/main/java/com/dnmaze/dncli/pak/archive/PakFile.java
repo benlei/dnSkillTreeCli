@@ -3,6 +3,7 @@ package com.dnmaze.dncli.pak.archive;
 import com.dnmaze.dncli.util.CompressUtil;
 import com.dnmaze.dncli.util.OsUtil;
 
+import lombok.Getter;
 import org.apache.commons.io.IOUtils;
 
 import java.io.File;
@@ -28,10 +29,17 @@ public class PakFile {
 
   private final File pakFile;
 
+  @Getter
   private String path;
+
+  @Getter
   private int size;
+
+  @Getter
   private int compressedSize;
-  private long dataPosition;
+
+  @Getter
+  private int dataPosition;
 
   /**
    * <p>The originating pak archive this pak file is from.</p>
@@ -59,6 +67,7 @@ public class PakFile {
     byte[] pathBytes = new byte[PATH_BYTES];
 
     buffer.order(ByteOrder.LITTLE_ENDIAN);
+
     try {
       fileChannel = FileChannel.open(file.toPath());
       fileChannel.position(startPosition + Math.multiplyExact(META_BYTES, frame));
@@ -73,57 +82,12 @@ public class PakFile {
       thiz.path = thiz.path.substring(0, thiz.path.indexOf('\0')).trim();
       thiz.size = buffer.getInt();
       thiz.compressedSize = buffer.getInt();
-      thiz.dataPosition = buffer.getInt() & 0x00000000FFFFFFFL;
+      thiz.dataPosition = buffer.getInt();
 
       return thiz;
     } finally {
       IOUtils.closeQuietly(fileChannel);
     }
-  }
-
-  /**
-   * <p>Gets the originating pak archive.</p>
-   *
-   * @return the pak archive
-   */
-  public File getPakFile() {
-    return pakFile;
-  }
-
-  /**
-   * <p>Gets the path of this pak file.</p>
-   *
-   * @return the path
-   */
-  public String getPath() {
-    return path;
-  }
-
-  /**
-   * <p>Gets the size of this pak file.</p>
-   *
-   * @return the size
-   */
-  public int getSize() {
-    return size;
-  }
-
-  /**
-   * <p>Gets the compressed size of this pak file.</p>
-   *
-   * @return the compressed size
-   */
-  public int getCompressedSize() {
-    return compressedSize;
-  }
-
-  /**
-   * <p>The data position of the pak file.</p>
-   *
-   * @return the data position
-   */
-  public long getDataPosition() {
-    return dataPosition;
   }
 
   /**
@@ -139,12 +103,12 @@ public class PakFile {
     File absoluteDir = absoluteFile.getParentFile();
 
     // create all directories
-    if (!absoluteDir.mkdirs()) {
+    if (!absoluteDir.mkdirs() && !absoluteDir.exists()) {
       throw new RuntimeException("Could not create directory " + absoluteDir.getPath());
     }
 
     try (FileOutputStream out = new FileOutputStream(absoluteFile)) {
-      out.write(CompressUtil.decompress(pakFile, (int) dataPosition, compressedSize, size));
+      out.write(CompressUtil.decompress(pakFile, dataPosition, compressedSize, size));
     }
   }
 }

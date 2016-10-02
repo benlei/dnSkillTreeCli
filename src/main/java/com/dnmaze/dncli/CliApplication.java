@@ -75,7 +75,7 @@ public class CliApplication {
     try {
       switch (parsedCommand) {
         case "pak":
-          String pakCommand = dntJc.getParsedCommand();
+          String pakCommand = pakJc.getParsedCommand();
           if (pakCommand == null) {
             jc.usage();
             System.exit(1);

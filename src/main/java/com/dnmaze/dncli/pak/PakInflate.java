@@ -12,7 +12,7 @@ import java.io.IOException;
  * Created by blei on 9/30/16.
  */
 public class PakInflate implements Runnable {
-  private final byte[] BUFFER = new byte[10240];
+  private static final byte[] BUFFER = new byte[10240];
   private final CommandPak.Inflate args;
 
   public PakInflate(CommandPak.Inflate args) {
