@@ -13,7 +13,6 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import lombok.SneakyThrows;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Pair;
 import org.w3c.dom.CharacterData;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -91,13 +90,13 @@ public class DntProcess implements Runnable {
       System.out.println();
     }
 
-    System.out.println("Running complete() function...");
-    dnt.complete();
+    System.out.println("Running process() function...");
+    dnt.process();
 
     IOUtils.closeQuietly(dnt);
   }
 
-  private Pair<String, String> getNameIdPair(File file) {
+  private String getTableName(File file) {
     if (file.length() < 10) {
       throw new RuntimeException(file.getPath() + " is not a valid DNT file.");
     }
@@ -114,7 +113,7 @@ public class DntProcess implements Runnable {
       throw new RuntimeException(tableName + " is not alphanumeric!");
     }
 
-    return Pair.of(tableName, "_" + tableName + "ID");
+    return tableName;
   }
 
   @SuppressFBWarnings
@@ -124,23 +123,23 @@ public class DntProcess implements Runnable {
       })
   @SneakyThrows
   private void createMessageTable(File file) {
-    Pair<String, String> nameIdPair = getNameIdPair(file);
+    String tableName = getTableName(file);
     connection.setAutoCommit(false);
 
     if (args.isFresh()) {
-      deleteTableOnce(connection, nameIdPair.getKey());
+      deleteTableOnce(connection, tableName);
     }
 
     // Create table
     Statement stmt = connection.createStatement();
-    String createTableQuery = createCreateQuery(connection, nameIdPair,
+    String createTableQuery = createCreateQuery(connection, tableName,
         MESSAGE_COLUMN_NAMES,
         MESSAGE_COLUMN_DEFN);
 
     stmt.execute(createTableQuery);
 
     // prepared insert query
-    String insertQuery = createInsertQuery(nameIdPair, MESSAGE_COLUMN_NAMES);
+    String insertQuery = createInsertQuery(tableName, MESSAGE_COLUMN_NAMES);
     PreparedStatement pstmt = connection.prepareStatement(insertQuery);
 
     // parse the XML
@@ -174,7 +173,7 @@ public class DntProcess implements Runnable {
       })
   @SneakyThrows
   private void createTables(File file) {
-    Pair<String, String> nameIdPair = getNameIdPair(file);
+    String tableName = getTableName(file);
 
     FileChannel fileChannel = FileChannel.open(file.toPath());
     ByteBuffer buf = fileChannel.map(FileChannel.MapMode.READ_ONLY, 4, file.length() - 4);
@@ -216,17 +215,17 @@ public class DntProcess implements Runnable {
     }
 
     if (args.isFresh()) {
-      deleteTableOnce(connection, nameIdPair.getKey());
+      deleteTableOnce(connection, tableName);
     }
 
     // Create the table
     Statement stmt = connection.createStatement();
-    String createQuery = createCreateQuery(connection, nameIdPair, columnNames, dntColumns);
+    String createQuery = createCreateQuery(connection, tableName, columnNames, dntColumns);
 
     stmt.execute(createQuery);
 
     // Create the prepared insert query
-    String insertQuery = createInsertQuery(nameIdPair, columnNames);
+    String insertQuery = createInsertQuery(tableName, columnNames);
     PreparedStatement pstmt = connection.prepareStatement(insertQuery);
 
     // read each row and put it into entries
@@ -265,16 +264,14 @@ public class DntProcess implements Runnable {
 
   @SneakyThrows
   private String createCreateQuery(Connection connection,
-                                   Pair<String, String> nameIdPair,
+                                   String tableName,
                                    List<String> columnNames,
                                    List<DntColumn> dntColumns) {
     int size = columnNames.size();
     StringBuilder builder = new StringBuilder("CREATE TABLE IF NOT EXISTS ");
     builder
-        .append(nameIdPair.getKey())
-        .append(" (")
-        .append(nameIdPair.getValue())
-        .append(" INTEGER PRIMARY KEY");
+        .append(tableName)
+        .append(" (ID INTEGER PRIMARY KEY");
 
     for (int i = 0; i < size; i++) {
       String columnName = columnNames.get(i);
@@ -298,12 +295,11 @@ public class DntProcess implements Runnable {
     return builder.append(" CHARACTER SET utf8 COLLATE utf8_unicode_ci").toString();
   }
 
-  private String createInsertQuery(Pair<String, String> nameIdPair,
+  private String createInsertQuery(String tableName,
                                    List<String> columnNames) {
     StringBuilder frontBuilder = new StringBuilder("INSERT INTO "
-                                                   + nameIdPair.getKey()
-                                                   + " ("
-                                                   + nameIdPair.getValue());
+                                                   + tableName
+                                                   + " (ID");
 
     StringBuilder backBuilder = new StringBuilder("?");
 
@@ -315,13 +311,7 @@ public class DntProcess implements Runnable {
     return frontBuilder
         .append(") VALUES (")
         .append(backBuilder)
-        .append(") ")
-
-        // on duplicate... ignore, basically
-        .append("ON DUPLICATE KEY UPDATE ")
-        .append(nameIdPair.getValue())
-        .append(" = ")
-        .append(nameIdPair.getValue())
+        .append(") ON DUPLICATE KEY UPDATE ID = ID")
         .toString();
   }
 

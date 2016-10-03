@@ -27,27 +27,33 @@ public class CommandDnt {
     private final Runnable runner = new DntProcess(this);
 
     @Getter
-    @Parameter(names = "-js",
-        description = "The query JS file that must have 4 functions defined: "
+    @Parameter(
+        names = "-js",
+        description = "The JS file that must have 4 functions defined: "
                       + "normalizeName(java.lang.String) for normalizing table names, "
                       + "getConnection() that should return a java.sql.Connection for this "
                       + "program to use to re-create tables and propagate data, "
                       + "close() for closing the JDBC connection, and "
-                      + "complete() for performing any tasks after all DNT data has been "
+                      + "process() for performing any tasks after all DNT data has been "
                       + "propagated.",
         converter = FileConverter.class,
-        required = true)
+        required = true
+    )
     private File jsFile;
 
     @Getter
-    @Parameter(names = "-uistring",
+    @Parameter(
+        names = "-uistring",
         description = "The uistring.xml file that can be loaded for the query() method.",
-        converter = FileConverter.class)
+        converter = FileConverter.class
+    )
     private File messageFile;
 
     @Getter
-    @Parameter(names = "-fresh",
-        description = "Deletes ALL found normalized tables before inserting.")
+    @Parameter(
+        names = "-fresh",
+        description = "Deletes ALL found normalized tables before inserting."
+    )
     private boolean fresh;
 
     @Getter
@@ -65,14 +71,11 @@ public class CommandDnt {
     private final Runnable runner = new DntExecute(this);
 
     @Getter
-    @Parameter(description = "The query JS file that must have 3 functions defined: "
-                             + "normalizeName(java.lang.String) for normalizing table names, "
-                             + "getConnection() that should return a java.sql.Connection for this "
-                             + "program to use to re-create tables and propagate data, and "
-                             + "complete() for performing any tasks after all DNT data has been "
-                             + "propagated. The first parameter specified will be assumed to be "
-                             + "the input.",
-        required = true)
+    @Parameter(
+        description = "The JS file should follow same requirements as the -js"
+                      + "param for DNT processing.",
+        required = true
+    )
     private List<File> inputs;
 
     @Override

@@ -20,7 +20,7 @@ public class DntExecute implements Runnable {
     try {
       Invocable js = JsUtil.compileAndEval(args.getInputs().get(0));
       Dnt dnt = js.getInterface(Dnt.class);
-      dnt.complete();
+      dnt.process();
     } catch (Exception ex) {
       throw new RuntimeException(ex.getMessage());
     }

@@ -14,5 +14,5 @@ public interface Dnt extends Closeable {
   Connection getConnection();
 
   /** Finalizes anything you want to do after DNT data has been propagated to MySQL/H2 server. */
-  void complete();
+  void process();
 }
