@@ -66,8 +66,8 @@ public class PakCompress implements Runnable {
     int prefixLen = input.getPath().length();
     conn = H2Util.getConnection("/pakCompressInit.sql");
     String query = "INSERT INTO file (path, file_size, zdata, zfile_size) VALUES (?, ?, ?, ?)";
-    try (PreparedStatement stmt = conn.prepareStatement(query)) {
 
+    try (PreparedStatement stmt = conn.prepareStatement(query)) {
       while (iterator.hasNext()) {
         if (files > 0 && files % ROW_LIMIT == 0) {
           conn.commit();
@@ -108,6 +108,7 @@ public class PakCompress implements Runnable {
     buf.putInt(files);
     buf.putInt(metaStart);
     buf.flip();
+
     output.write(buf);
 
     // start writing the meta
@@ -126,63 +127,51 @@ public class PakCompress implements Runnable {
 
       buf.order(ByteOrder.LITTLE_ENDIAN);
 
-      while (offset < files) {
-        stmt.execute("SELECT * FROM file LIMIT " + ROW_LIMIT + " OFFSET " + offset);
+      stmt.execute("SELECT * FROM file");
+      ResultSet rs = stmt.getResultSet();
 
-        ResultSet rs = stmt.getResultSet();
+      while (rs.next()) {
+        String path = rs.getString("path");
+        int fileSize = rs.getInt("file_size");
+        int compressedSize = rs.getInt("zfile_size");
 
-        while (rs.next()) {
-          String path = rs.getString("path");
-          int fileSize = rs.getInt("file_size");
-          int compressedSize = rs.getInt("zfile_size");
+        buf.clear();
+        buf.put(path.getBytes(StandardCharsets.UTF_8));
+        buf.put(new byte[PakFile.PATH_BYTES - path.length()]); // fill w/ null terminating chars
+        buf.putInt(fileSize);
+        buf.putInt(compressedSize);
+        buf.putInt(dataPosition);
+        buf.put(new byte[44]); // 44 byte padding for some reason
+        buf.flip();
 
-          buf.clear();
-          buf.put(path.getBytes(StandardCharsets.UTF_8));
-          buf.put(new byte[PakFile.PATH_BYTES - path.length()]); // fill w/ null terminating chars
-          buf.putInt(fileSize);
-          buf.putInt(compressedSize);
-          buf.putInt(dataPosition);
-          buf.put(new byte[44]); // 44 byte padding for some reason
-          buf.flip();
+        output.write(buf);
 
-          output.write(buf);
-
-          dataPosition += compressedSize;
-        }
-
-        rs.close();
-
-        offset += ROW_LIMIT;
+        dataPosition += compressedSize;
       }
+
+      rs.close();
+
     }
   }
 
   private void compileZData() throws SQLException, IOException {
     try (Statement stmt = conn.createStatement()) {
       int lastZFileSize = 0;
-      int offset = 0;
 
-      while (offset < files) {
-        stmt.execute("SELECT * FROM file LIMIT " + ROW_LIMIT + " OFFSET " + offset);
+      stmt.execute("SELECT * FROM file");
+      ResultSet rs = stmt.getResultSet();
 
-        ResultSet rs = stmt.getResultSet();
+      while (rs.next()) {
+        Blob blob = rs.getBlob("zdata");
+        int compressedSize = rs.getInt("zfile_size");
+        ByteBuffer dataBuffer = ByteBuffer.wrap(blob.getBytes(0, compressedSize));
+        blob.free(); // free the blob!
 
-        while (rs.next()) {
-          Blob blob = rs.getBlob("zdata");
-          int compressedSize = rs.getInt("zfile_size");
-          ByteBuffer dataBuffer = ByteBuffer.wrap(blob.getBytes(0, compressedSize));
-          blob.free(); // free the blob!
-
-          output.write(dataBuffer);
-          lastZFileSize = compressedSize;
-        }
-
-        rs.close();
-
-        offset += ROW_LIMIT;
+        output.write(dataBuffer);
+        lastZFileSize = compressedSize;
       }
 
-      stmt.close();
+      rs.close();
 
       if (lastZFileSize < args.getMin()) {
         output.write(ByteBuffer.allocate((int) (args.getMin() - lastZFileSize)));

@@ -8,6 +8,7 @@ import com.dnmaze.dncli.exception.InvalidDdsOutputFormatException;
 
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.ParameterException;
+import lombok.SneakyThrows;
 
 import java.util.Map;
 
@@ -15,20 +16,16 @@ import java.util.Map;
  * Created by blei on 6/15/16.
  */
 public class CliApplication {
-  static {
-    try {
-      Class.forName("org.h2.Driver");
-    } catch (ClassNotFoundException ex) {
-      ex.printStackTrace();
-    }
-  }
-
   /**
    * <p>The main program.</p>
    *
    * @param args the args
    */
+  @SneakyThrows
   public static void main(String[] args) {
+    // register H2
+    Class.forName("org.h2.Driver");
+
     Command command = new Command();
     JCommander jc = new JCommander(command);
     jc.setProgramName("dncli");
@@ -48,7 +45,7 @@ public class CliApplication {
     JCommander dntJc = addCommand(jc, "dnt", dnt);
 
     //dnt subcommand setup
-    dntJc.addCommand("-query", dnt.getQuery());
+    dntJc.addCommand("-process", dnt.getProcess());
     dntJc.addCommand("-execute", dnt.getExecute());
 
     // dds command setup
@@ -108,8 +105,8 @@ public class CliApplication {
           }
 
           switch (dntCommand) {
-            case "-query":
-              dnt.getQuery().run();
+            case "-process":
+              dnt.getProcess().run();
               break;
             case "-execute":
               dnt.getExecute().run();

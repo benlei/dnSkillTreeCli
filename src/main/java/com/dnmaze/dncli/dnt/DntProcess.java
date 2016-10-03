@@ -3,16 +3,15 @@ package com.dnmaze.dncli.dnt;
 import static com.dnmaze.dncli.enums.DntColumn.BOOLEAN;
 import static com.dnmaze.dncli.enums.DntColumn.FLOAT;
 import static com.dnmaze.dncli.enums.DntColumn.INTEGER;
-import static com.dnmaze.dncli.enums.DntColumn.STRING;
+import static com.dnmaze.dncli.enums.DntColumn.TEXT;
 
 import com.dnmaze.dncli.command.CommandDnt;
 import com.dnmaze.dncli.enums.DntColumn;
 import com.dnmaze.dncli.util.JsUtil;
-import com.dnmaze.dncli.util.ResourceUtil;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import lombok.Cleanup;
 import lombok.SneakyThrows;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.w3c.dom.CharacterData;
@@ -27,6 +26,7 @@ import java.nio.channels.FileChannel;
 import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -38,14 +38,25 @@ import javax.xml.parsers.DocumentBuilderFactory;
 /**
  * Created by blei on 6/19/16.
  */
-public class DntQuery implements Runnable {
-  private static final int COMMIT_COUNT = 1000;
-  private final CommandDnt.Query args;
+public class DntProcess implements Runnable {
+  private static final int COMMIT_COUNT = Integer.parseInt(System.getProperty("dnt.commit.count",
+      "5000"));
+
+  private static final List<String> MESSAGE_COLUMN_NAMES = new ArrayList<>();
+  private static final List<DntColumn> MESSAGE_COLUMN_DEFN = new ArrayList<>();
+
+  static {
+    MESSAGE_COLUMN_NAMES.add("_Message");
+    MESSAGE_COLUMN_DEFN.add(DntColumn.TEXT);
+  }
+
+  private final CommandDnt.Process args;
   private Dnt dnt;
   private Set<String> deleted = new HashSet<>();
   private int commitCount;
+  private Connection connection;
 
-  public DntQuery(CommandDnt.Query args) {
+  public DntProcess(CommandDnt.Process args) {
     this.args = args;
   }
 
@@ -58,14 +69,32 @@ public class DntQuery implements Runnable {
       throw new RuntimeException(ex.getMessage());
     }
 
-    File messageFile = args.getMessageFile();
-    if (messageFile != null) {
-      createMessageTable(messageFile);
+    connection = dnt.getConnection();
+
+    try {
+      connection.setAutoCommit(false);
+    } catch (SQLException ex) {
+      System.err.println(ex.getMessage());
+      System.err.println("Attempted to set autocommit to false, failed. Continuing...");
     }
 
-    args.getInputs().forEach(this::createTables);
+    File messageFile = args.getMessageFile();
+    if (messageFile != null) {
+      System.out.println("Processing uistring file " + messageFile.getPath());
+      createMessageTable(messageFile);
+      System.out.println();
+    }
 
+    for (File file : args.getInputs()) {
+      System.out.println("Processing DNT file " + file.getPath());
+      createTables(file);
+      System.out.println();
+    }
+
+    System.out.println("Running complete() function...");
     dnt.complete();
+
+    IOUtils.closeQuietly(dnt);
   }
 
   private Pair<String, String> getNameIdPair(File file) {
@@ -96,24 +125,25 @@ public class DntQuery implements Runnable {
   @SneakyThrows
   private void createMessageTable(File file) {
     Pair<String, String> nameIdPair = getNameIdPair(file);
-
-    String createTableQuery = String.format(ResourceUtil.read("/dntMessageInit.sql"),
-        nameIdPair.getKey(), nameIdPair.getValue());
-
-    @Cleanup Connection connection = dnt.getConnection();
     connection.setAutoCommit(false);
 
     if (args.isFresh()) {
       deleteTableOnce(connection, nameIdPair.getKey());
     }
 
+    // Create table
     Statement stmt = connection.createStatement();
+    String createTableQuery = createCreateQuery(connection, nameIdPair,
+        MESSAGE_COLUMN_NAMES,
+        MESSAGE_COLUMN_DEFN);
+
     stmt.execute(createTableQuery);
 
-    PreparedStatement pstmt =
-        connection.prepareStatement(String.format("INSERT INTO %s (%s, message) VALUES (?, ?)",
-            nameIdPair.getKey(), nameIdPair.getValue()));
+    // prepared insert query
+    String insertQuery = createInsertQuery(nameIdPair, MESSAGE_COLUMN_NAMES);
+    PreparedStatement pstmt = connection.prepareStatement(insertQuery);
 
+    // parse the XML
     Document document = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(file);
     document.getDocumentElement().normalize();
     NodeList nodes = document.getElementsByTagName("message");
@@ -125,14 +155,13 @@ public class DntQuery implements Runnable {
       String data = ((CharacterData)element.getFirstChild()).getData();
 
       pstmt.setInt(1, mid);
-      pstmt.setString(2, data);
-
+      pstmt.setBytes(2, data.getBytes(StandardCharsets.UTF_8));
       pstmt.execute();
 
-      maybeCommit(connection);
+      maybeCommit(connection, i);
     }
 
-    finalCommit(connection);
+    finalCommit(connection, nodesLength);
 
     pstmt.close();
     stmt.close();
@@ -169,7 +198,7 @@ public class DntQuery implements Runnable {
 
       switch (type) {
         case 1:
-          dntColumns.add(STRING);
+          dntColumns.add(TEXT);
           break;
         case 2:
           dntColumns.add(BOOLEAN);
@@ -186,19 +215,19 @@ public class DntQuery implements Runnable {
       }
     }
 
-    String createQuery = createCreateQuery(nameIdPair, columnNames, dntColumns);
-    String insertQuery = createInsertQuery(nameIdPair, columnNames);
-    @Cleanup Connection connection = dnt.getConnection();
-    connection.setAutoCommit(false);
-
     if (args.isFresh()) {
       deleteTableOnce(connection, nameIdPair.getKey());
     }
 
+    // Create the table
     Statement stmt = connection.createStatement();
-    PreparedStatement pstmt = connection.prepareStatement(insertQuery);
+    String createQuery = createCreateQuery(connection, nameIdPair, columnNames, dntColumns);
 
     stmt.execute(createQuery);
+
+    // Create the prepared insert query
+    String insertQuery = createInsertQuery(nameIdPair, columnNames);
+    PreparedStatement pstmt = connection.prepareStatement(insertQuery);
 
     // read each row and put it into entries
     for (int i = 0; i < numRows; i++) {
@@ -212,10 +241,10 @@ public class DntQuery implements Runnable {
       }
 
       pstmt.execute();
-      maybeCommit(connection);
+      maybeCommit(connection, i);
     }
 
-    finalCommit(connection);
+    finalCommit(connection, numRows);
 
     pstmt.close();
     stmt.close();
@@ -234,7 +263,9 @@ public class DntQuery implements Runnable {
     stmt.close();
   }
 
-  private String createCreateQuery(Pair<String, String> nameIdPair,
+  @SneakyThrows
+  private String createCreateQuery(Connection connection,
+                                   Pair<String, String> nameIdPair,
                                    List<String> columnNames,
                                    List<DntColumn> dntColumns) {
     int size = columnNames.size();
@@ -256,7 +287,15 @@ public class DntQuery implements Runnable {
           .append(dntColumn.getDefinition());
     }
 
-    return builder.append(')').toString();
+    builder.append(')');
+
+    if (connection.getMetaData()
+        .getDatabaseProductName()
+        .equals("H2")) {
+      return builder.toString();
+    }
+
+    return builder.append(" CHARACTER SET utf8 COLLATE utf8_unicode_ci").toString();
   }
 
   private String createInsertQuery(Pair<String, String> nameIdPair,
@@ -266,7 +305,7 @@ public class DntQuery implements Runnable {
                                                    + " ("
                                                    + nameIdPair.getValue());
 
-    StringBuilder backBuilder = new StringBuilder("(?");
+    StringBuilder backBuilder = new StringBuilder("?");
 
     for (String columnName : columnNames) {
       frontBuilder.append(',').append(columnName);
@@ -274,28 +313,35 @@ public class DntQuery implements Runnable {
     }
 
     return frontBuilder
-        .append(')')
-        .append(" VALUES ")
+        .append(") VALUES (")
         .append(backBuilder)
-        .append(')')
+        .append(") ")
+
+        // on duplicate... ignore, basically
+        .append("ON DUPLICATE KEY UPDATE ")
+        .append(nameIdPair.getValue())
+        .append(" = ")
+        .append(nameIdPair.getValue())
         .toString();
   }
 
   @SneakyThrows
-  private void maybeCommit(Connection connection) {
+  private void maybeCommit(Connection connection, int curr) {
     commitCount++;
 
     if (commitCount == COMMIT_COUNT) {
       commitCount = 0;
       connection.commit();
+      System.out.println("Processed " + (curr + 1) + " entries...");
     }
   }
 
   @SneakyThrows
-  private void finalCommit(Connection connection) {
+  private void finalCommit(Connection connection, int entries) {
     if (commitCount > 0) {
       commitCount = 0;
       connection.commit();
+      System.out.println("Completed processing " + entries + " entries.");
     }
   }
 

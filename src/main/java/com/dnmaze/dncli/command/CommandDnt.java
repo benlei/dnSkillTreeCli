@@ -1,7 +1,7 @@
 package com.dnmaze.dncli.command;
 
 import com.dnmaze.dncli.dnt.DntExecute;
-import com.dnmaze.dncli.dnt.DntQuery;
+import com.dnmaze.dncli.dnt.DntProcess;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
@@ -17,21 +17,22 @@ import java.util.List;
 @Parameters(commandDescription = "DragonNest Table file querying. Utilizes MySQL syntax.")
 public class CommandDnt {
   @Getter
-  private final Query query = new Query();
+  private final Process process = new Process();
 
   @Getter
   private final Execute execute = new Execute();
 
   @Parameters
-  public static class Query implements Runnable {
-    private final Runnable runner = new DntQuery(this);
+  public static class Process implements Runnable {
+    private final Runnable runner = new DntProcess(this);
 
     @Getter
     @Parameter(names = "-js",
-        description = "The query JS file that must have 3 functions defined: "
+        description = "The query JS file that must have 4 functions defined: "
                       + "normalizeName(java.lang.String) for normalizing table names, "
                       + "getConnection() that should return a java.sql.Connection for this "
-                      + "program to use to re-create tables and propagate data, and "
+                      + "program to use to re-create tables and propagate data, "
+                      + "close() for closing the JDBC connection, and "
                       + "complete() for performing any tasks after all DNT data has been "
                       + "propagated.",
         converter = FileConverter.class,

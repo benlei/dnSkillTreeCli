@@ -1,4 +1,0 @@
-CREATE TABLE IF NOT EXISTS %s (
-    %s INTEGER PRIMARY KEY,
-    _String TEXT
-);

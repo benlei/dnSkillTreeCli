@@ -13,7 +13,7 @@ import java.util.List;
  * Created by blei on 9/28/16.
  */
 public enum DntColumn {
-  STRING("VARCHAR(255)", 1),
+  TEXT("TEXT", 1),
   BOOLEAN("BOOLEAN", 2),
   INTEGER("INTEGER", 3),
   FLOAT("FLOAT", 4, 5);
@@ -44,7 +44,7 @@ public enum DntColumn {
   @SneakyThrows
   public void setValue(PreparedStatement stmt, int parameterIndex, Object obj) {
     switch (this) {
-      case STRING:
+      case TEXT:
         stmt.setString(parameterIndex, (String) obj);
         break;
       case BOOLEAN:
@@ -64,7 +64,7 @@ public enum DntColumn {
   /** Reads a value from the buffer based on this type. */
   public Object readBuffer(ByteBuffer buf) {
     switch (this) {
-      case STRING:
+      case TEXT:
         byte[] bytes = new byte[buf.getShort()];
         buf.get(bytes);
         return new String(bytes, StandardCharsets.UTF_8);

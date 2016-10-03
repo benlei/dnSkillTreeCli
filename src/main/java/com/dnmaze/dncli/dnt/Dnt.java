@@ -1,11 +1,12 @@
 package com.dnmaze.dncli.dnt;
 
+import java.io.Closeable;
 import java.sql.Connection;
 
 /**
  * Created by blei on 9/27/16.
  */
-public interface Dnt {
+public interface Dnt extends Closeable {
   /** Get table name from a name (name is the file name with extension stripped). */
   String normalizeName(String name);
 
