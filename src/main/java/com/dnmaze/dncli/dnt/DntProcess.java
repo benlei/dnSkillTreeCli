@@ -154,7 +154,7 @@ public class DntProcess implements Runnable {
       String data = ((CharacterData)element.getFirstChild()).getData();
 
       pstmt.setInt(1, mid);
-      pstmt.setBytes(2, data.getBytes(StandardCharsets.UTF_8));
+      pstmt.setString(2, data);
       pstmt.execute();
 
       maybeCommit(connection, i);

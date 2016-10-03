@@ -1,3 +1,4 @@
 {
-  "output": "/tmp"
+  "output": "/tmp",
+  "levelCap": 93
 }

@@ -8,7 +8,7 @@ var IOUtils = org.apache.commons.io.IOUtils;
 var StandardCharsets = java.nio.charset.StandardCharsets;
 
 // static final fields
-var QUERY_GET_ALL_JOBS = "SELECT j.*, m._Message as $JobName FROM Job j JOIN Message m ON m.ID = j._JobName WHERE _Service IS TRUE";
+var QUERY_GET_ALL_JOBS = "SELECT j.*, m._Message as JobName FROM Job j JOIN Message m ON m.ID = j._JobName WHERE _Service IS TRUE";
 
 // fields
 var config = JSON.parse(
@@ -60,7 +60,13 @@ var getConnection = function () {
 var process = function () {
     var connection = getConnection();
     var stmt = connection.createStatement();
+    var maxSP;
 
+    if (config.levelCap < 51) {
+        maxSP = (config.levelCap - 1) * 3;
+    } else {
+        maxSP = 147 + (config.levelCap - 50) * 2;
+    }
 
     // 1. Get all existing jobs
     var rs = stmt.executeQuery(QUERY_GET_ALL_JOBS);
@@ -69,16 +75,18 @@ var process = function () {
     while (rs.next()) {
         var job = {
             "id": rs.getInt('ID'),
-            "jobName": rs.getString('$JobName'),
+            "jobName": rs.getString('JobName'),
             "jobNumber": rs.getInt('_JobNumber'),
             "baseClass": rs.getInt('_BaseClass'),
             "parentJob": rs.getInt('_ParentJob'),
             "englishName": rs.getString('_EnglishName').toLowerCase(),
             "jobIcon": rs.getInt('_JobIcon'),
-            "maxSPJob0": rs.getFloat('_MaxSPJob0'),
-            "maxSPJob1": rs.getFloat('_MaxSPJob1'),
-            "maxSPJob2": rs.getFloat('_MaxSPJob2'),
-            "awakened": rs.getInt('_AwakeningItem') > 0
+            "awakened": rs.getInt('_AwakeningItem') > 0,
+
+            // these 3 should be stored elsewhere...
+            "maxSPJob0": Math.floor(maxSP * rs.getFloat('_MaxSPJob0')),
+            "maxSPJob1": Math.floor(maxSP * rs.getFloat('_MaxSPJob1')),
+            "maxSPJob2": Math.floor(maxSP * rs.getFloat('_MaxSPJob2'))
         };
 
         if (job.jobNumber == 2) {

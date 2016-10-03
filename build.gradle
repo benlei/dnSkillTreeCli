@@ -47,7 +47,7 @@ dependencies {
     compile group: 'com.google.code.findbugs', name: 'findbugs', version: '3.0.1'
     compile group: 'com.h2database', name: 'h2', version: '1.4.192'
     compile group: 'commons-io', name: 'commons-io', version: '2.5'
-    compile group: 'mysql', name: 'mysql-connector-java', version: '6.0.4'
+    compile group: 'mysql', name: 'mysql-connector-java', version: '5.1.39'
     compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.4'
 }
 
