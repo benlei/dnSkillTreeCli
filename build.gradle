@@ -1,0 +1,88 @@
+buildscript {
+    ext {
+        startClass = 'com.dnmaze.dncli.CliApplication'
+    }
+
+    repositories {
+        mavenCentral()
+    }
+}
+
+plugins {
+    id 'java'
+    id 'idea'
+    id 'eclipse'
+    id 'checkstyle'
+    id 'pmd'
+    id 'findbugs'
+    id 'net.researchgate.release' version '2.4.0'
+}
+
+jar {
+    baseName = 'dncli'
+    version = '2.0.0-SNAPSHOT'
+
+    manifest {
+        attributes "Main-Class": "${startClass}"
+    }
+
+    from {
+        configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+}
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compileOnly group: 'org.projectlombok', name: 'lombok', version: '1.16.10'
+
+    compile fileTree(dir: 'libs', include: '*.jar')
+
+    compile group: 'com.beust', name: 'jcommander', version: '1.48'
+    compile group: 'com.google.code.findbugs', name: 'findbugs', version: '3.0.1'
+    compile group: 'com.h2database', name: 'h2', version: '1.4.192'
+    compile group: 'commons-io', name: 'commons-io', version: '2.5'
+    compile group: 'mysql', name: 'mysql-connector-java', version: '5.1.39'
+    compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.4'
+}
+
+eclipse {
+    classpath {
+        containers.remove('org.eclipse.jdt.launching.JRE_CONTAINER')
+        containers 'org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8'
+    }
+}
+
+checkstyle {
+    toolVersion = '7.1.1'
+    showViolations = false
+}
+
+tasks.withType(Checkstyle) {
+    reports {
+        html.destination rootProject.file("build/reports/checkstyle.html")
+    }
+}
+
+tasks.withType(FindBugs) {
+    reports {
+        xml.enabled = false
+        html.enabled = true
+    }
+}
+
+tasks.withType(Checkstyle).each { checkstyleTask ->
+    checkstyleTask.doLast {
+        reports.all { report ->
+            def outputFile = report.destination
+            if (outputFile.exists() && outputFile.text.contains("<error ")) {
+                throw new GradleException("There were checkstyle warnings! For more info check file://${reports.html.destination}")
+            }
+        }
+    }
+}
