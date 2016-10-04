@@ -36,12 +36,12 @@ $ dn -help
 The following should parse through all DNT files, pass it into the accumulate function defined in dnt.js, and then finally run a compile() function (also must be defined in dnt.js).
 
 ```
-$ dn dnt -query -fresh -js ./example/maze.js /path/to/resource/ext/*
+$ dn dnt -process -fresh -js ./example/maze.js /path/to/resource/ext/*
 ```
 
 or on a Windows PowerShell:
 ```
-> dn dnt -query -fresh -js ".\example\maze.js" "D:\path\to\resources\ext\*"
+> dn dnt -process -fresh -js ".\example\maze.js" "D:\path\to\resources\ext\*"
 ```
 
 Please look up more information about Nashorn in order to better write JavaScript for Java: <http://www.oracle.com/technetwork/articles/java/jf14-nashorn-2126515.html>
