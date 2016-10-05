@@ -38,7 +38,7 @@ var process = function () {
     var stmt = connection.createStatement();
 
     // Get all existing jobs
-    var rs = stmt.executeQuery("SELECT * FROM Job WHERE _Service IS TRUE");
+    var rs = stmt.executeQuery("SELECT * FROM job WHERE _Service IS TRUE");
 
     // List
     while (rs.next()) {
