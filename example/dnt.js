@@ -21,8 +21,15 @@ var normalizeName = function (name) {
       return name;
     }
 
- 
-    return name.substring(0, idx);
+    name = name.substring(0, idx);
+
+    // special cases
+    switch (name) {
+        case 'union':
+            return 'uniontable';
+        default:
+            return name;
+    }
 };
 
 /** Gets a JDBC connection. */
