@@ -79,14 +79,24 @@ public class DntProcess implements Runnable {
 
     File messageFile = args.getMessageFile();
     if (messageFile != null) {
-      System.out.println("Processing uistring file " + messageFile.getPath());
-      createMessageTable(messageFile);
+      try {
+        System.out.println("Processing uistring file " + messageFile.getPath());
+        createMessageTable(messageFile);
+      } catch (Exception ex) {
+        System.err.println(ex.getMessage());
+      }
+
       System.out.println();
     }
 
     for (File file : args.getInputs()) {
-      System.out.println("Processing DNT file " + file.getPath());
-      createTables(file);
+      try {
+        System.out.println("Processing DNT file " + file.getPath());
+        createTables(file);
+      } catch (Exception ex) {
+        System.err.println(ex.getMessage());
+      }
+
       System.out.println();
     }
 
@@ -101,10 +111,10 @@ public class DntProcess implements Runnable {
       throw new RuntimeException(file.getPath() + " is not a valid DNT file.");
     }
 
-    String tableName = StringUtils.capitalize(dnt.normalizeName(stripExtension(file)));
+    String tableName = dnt.normalizeName(stripExtension(file));
 
     if (tableName == null) {
-      String stripped = StringUtils.capitalize(stripExtension(file));
+      String stripped = stripExtension(file);
       System.err.println(file.getPath() + " has no normalized name, using '" + stripped + "'");
       tableName = stripped;
     }

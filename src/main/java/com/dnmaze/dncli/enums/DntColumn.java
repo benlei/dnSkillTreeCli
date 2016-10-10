@@ -6,38 +6,21 @@ import lombok.SneakyThrows;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.sql.PreparedStatement;
-import java.util.Arrays;
-import java.util.List;
 
 /**
  * Created by blei on 9/28/16.
  */
 public enum DntColumn {
-  TEXT("TEXT", 1),
-  BOOLEAN("BOOLEAN", 2),
-  INTEGER("INTEGER", 3),
-  FLOAT("FLOAT", 4, 5);
+  TEXT("TEXT"),
+  BOOLEAN("BOOLEAN"),
+  INTEGER("INTEGER"),
+  FLOAT("FLOAT");
 
   @Getter
   private final String definition;
-  private final List<Integer> definitionValues;
 
-  DntColumn(String definition, Integer... definitionValues) {
+  DntColumn(String definition) {
     this.definition = definition;
-    this.definitionValues = Arrays.asList(definitionValues);
-  }
-
-  /** Creates a DntColumn from a byte value. */
-  public static DntColumn from(byte definitionValue) {
-    int value = Byte.toUnsignedInt(definitionValue);
-
-    for (DntColumn column : values()) {
-      if (column.definitionValues.contains(value)) {
-        return column;
-      }
-    }
-
-    return null;
   }
 
   /** Helper method to set value in a prepared statement. */

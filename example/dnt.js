@@ -11,7 +11,18 @@ var normalizeName = function (name) {
         return 'message';
     }
 
-    return name.substring(0, name.indexOf('table'));
+    var idx = name.indexOf('table');
+
+    if (idx == -1) {
+      idx = name.indexOf('_');
+    }
+
+    if (idx == -1) {
+      return name;
+    }
+
+ 
+    return name.substring(0, idx);
 };
 
 /** Gets a JDBC connection. */
@@ -20,14 +31,14 @@ var getConnection = function () {
         return connection;
     }
 
-    // connection = DriverManager.getConnection("jdbc:mysql://localhost/maze?"
-    //     + "user=root&"
-    //     + "password=root&"
-    //     + "useUnicode=true&"
-    //     + "characterEncoding=utf-8&"
-    //     + "useSSL=false");
+    connection = DriverManager.getConnection("jdbc:mysql://localhost/maze?"
+        + "user=root&"
+        + "password=root&"
+        + "useUnicode=true&"
+        + "characterEncoding=utf-8&"
+        + "useSSL=false");
 
-    connection = DriverManager.getConnection("jdbc:h2:mem:test;MODE=MYSQL;IGNORECASE=TRUE");
+    // connection = DriverManager.getConnection("jdbc:h2:mem:test;MODE=MYSQL;IGNORECASE=TRUE");
 
     return connection;
 };
