@@ -44,7 +44,7 @@ public class DdsConverter implements Runnable {
         maxImages = imageReader.getNumImages(true);
 
         for (int i = 0; i < maxImages; i++) {
-          String prefix = maxImages > 0 ? i + "." : "";
+          String prefix = maxImages > 1 ? i + "." : "";
 
           output = changeExt(file, prefix + newFormat);
           image = imageReader.read(i);
