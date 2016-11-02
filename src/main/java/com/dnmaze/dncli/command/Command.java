@@ -1,7 +1,6 @@
 package com.dnmaze.dncli.command;
 
 import com.beust.jcommander.Parameter;
-
 import lombok.Getter;
 
 /**
@@ -14,6 +13,8 @@ public class Command {
   private final CommandDnt dnt = new CommandDnt();
   @Getter
   private final CommandPak pak = new CommandPak();
+  @Getter
+  private final CommandPatch patch = new CommandPatch();
 
   @Getter
   @Parameter(names = "-help", description = "Displays this usage.", help = true)

@@ -4,6 +4,7 @@ import com.dnmaze.dncli.command.Command;
 import com.dnmaze.dncli.command.CommandDds;
 import com.dnmaze.dncli.command.CommandDnt;
 import com.dnmaze.dncli.command.CommandPak;
+import com.dnmaze.dncli.command.CommandPatch;
 import com.dnmaze.dncli.exception.InvalidDdsOutputFormatException;
 
 import com.beust.jcommander.JCommander;
@@ -51,6 +52,10 @@ public class CliApplication {
     // dds command setup
     CommandDds dds = command.getDds();
     jc.addCommand("dds", dds);
+
+    // patch command setup
+    CommandPatch patch = command.getPatch();
+    jc.addCommand("patch", patch);
 
     // parse args and set the params!
     try {
@@ -120,9 +125,13 @@ public class CliApplication {
         case "dds":
           dds.run();
           break;
+        case "patch":
+          patch.run();
+          break;
 
         default:
           throw new UnsupportedOperationException("Unknown command: '" + parsedCommand + "'");
+
       }
 
       System.exit(0);

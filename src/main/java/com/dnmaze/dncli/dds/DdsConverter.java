@@ -29,6 +29,11 @@ public class DdsConverter implements Runnable {
   public void run() {
     List<File> files = args.getFiles();
     Stream<File> stream = args.isForce() ? files.parallelStream() : files.stream();
+    File outputDir = args.getOutput();
+
+    if (outputDir != null && !outputDir.exists() && !outputDir.mkdirs()) {
+      throw new RuntimeException("Could not create " + outputDir.getPath());
+    }
 
     stream.forEach(file -> {
       ImageReader imageReader = ImageIO.getImageReadersBySuffix("dds").next();
@@ -73,7 +78,13 @@ public class DdsConverter implements Runnable {
       path = path.substring(0, extIndex) + "." + newExt;
     }
 
-    return new File(path);
+    File outputDir = args.getOutput();
+    File output = new File(path);
+    if (outputDir == null) {
+      return output;
+    } else {
+      return new File(outputDir, output.getName());
+    }
   }
 
   /**
