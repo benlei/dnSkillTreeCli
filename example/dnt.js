@@ -2,6 +2,9 @@
 var System = java.lang.System;
 var DriverManager = java.sql.DriverManager;
 
+// the absolute directory of this script
+var CWD = System.getProperty("dncli.cwd");
+
 // fields
 var connection;
 
