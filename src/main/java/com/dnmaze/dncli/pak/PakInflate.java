@@ -23,6 +23,7 @@ public class PakInflate implements Runnable {
   public void run() {
     long desiredSize = args.getSize();
     for (File file : args.getFiles()) {
+      file = file.getAbsoluteFile();
       long currSize = file.length();
 
       if (currSize < desiredSize) {

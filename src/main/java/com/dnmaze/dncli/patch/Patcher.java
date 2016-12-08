@@ -14,6 +14,7 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.Objects;
 
 /**
  * Created by blei on 11/2/16.
@@ -33,9 +34,14 @@ public class Patcher implements Runnable {
   @SneakyThrows
   @Override
   public void run() {
+    File outputDir = args.getOutput();
     int baseVersion = args.getBaseVersion();
     int endVersion = args.getEndVersion();
     int version = baseVersion;
+
+    Objects.requireNonNull(outputDir, "Output directory cannot be null");
+
+    outputDir = outputDir.getAbsoluteFile();
 
     if (endVersion < baseVersion) {
       throw new RuntimeException("the end version must be at least equal to the end version.");
@@ -48,7 +54,7 @@ public class Patcher implements Runnable {
       String strVersion = getPatchString(nextVersion);
       URL patchUrl = new URL(args.getUrl(), strVersion + "/Patch" + strVersion + ".pak");
       String url = patchUrl.toString();
-      File output = new File(args.getOutput(), "Patch" + strVersion + ".pak");
+      File output = new File(outputDir, "Patch" + strVersion + ".pak");
 
       if (download(patchUrl, output, 0)) {
         log(url + " -> " + output.getPath());
@@ -71,7 +77,7 @@ public class Patcher implements Runnable {
 
     if (versionFile != null) {
       log("");
-      createVersionFile(versionFile, version);
+      createVersionFile(versionFile.getAbsoluteFile(), version);
     }
   }
 

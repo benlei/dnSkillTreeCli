@@ -18,7 +18,7 @@ public class DntExecute implements Runnable {
   @Override
   public void run() {
     try {
-      Invocable js = JsUtil.compileAndEval(args.getInputs().get(0));
+      Invocable js = JsUtil.compileAndEval(args.getInputs().get(0).getAbsoluteFile());
       Dnt dnt = js.getInterface(Dnt.class);
       dnt.process();
     } catch (Exception ex) {

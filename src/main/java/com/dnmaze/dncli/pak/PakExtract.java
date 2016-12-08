@@ -9,6 +9,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.IntStream;
 import java.util.zip.DataFormatException;
 import javax.script.Invocable;
@@ -19,6 +20,7 @@ import javax.script.ScriptException;
  */
 public class PakExtract implements Runnable {
   private final CommandPak.Extract args;
+  private File outputDir;
 
   public PakExtract(CommandPak.Extract args) {
     this.args = args;
@@ -29,8 +31,15 @@ public class PakExtract implements Runnable {
     List<File> files = args.getFiles();
     File filterFile = args.getFilterFile();
     PakFilter filter = new PakFilterImpl();
+    outputDir = args.getOutput();
+
+    Objects.requireNonNull(outputDir, "Output directory cannot be null");
+
+    outputDir = outputDir.getAbsoluteFile();
 
     if (filterFile != null) {
+      filterFile = filterFile.getAbsoluteFile();
+
       try {
         Invocable js = JsUtil.compileAndEval(filterFile);
         filter = js.getInterface(PakFilter.class);
@@ -50,6 +59,8 @@ public class PakExtract implements Runnable {
    */
   private void extractFiles(List<File> files, PakFilter filter) {
     files.parallelStream().forEach(file -> {
+      file = file.getAbsoluteFile();
+
       try {
         PakHeader pakHeader = PakHeader.from(file);
         extractPakFiles(file, pakHeader, filter);
@@ -76,7 +87,7 @@ public class PakExtract implements Runnable {
         boolean extractable = filter.filter(pakFile);
 
         if (extractable) {
-          pakFile.extractTo(args.getOutput());
+          pakFile.extractTo(outputDir);
 
           if (!args.isQuiet()) {
             System.out.println(pakFile.getPath());

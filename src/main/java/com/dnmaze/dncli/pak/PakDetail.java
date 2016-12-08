@@ -27,6 +27,8 @@ public class PakDetail implements Runnable {
     boolean isNotFirst = false;
 
     for (File file : archives) {
+      file = file.getAbsoluteFile();
+
       try {
         if (isNotFirst) {
           System.out.println();

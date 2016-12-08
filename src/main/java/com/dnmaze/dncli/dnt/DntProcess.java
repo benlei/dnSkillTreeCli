@@ -61,8 +61,10 @@ public class DntProcess implements Runnable {
 
   @Override
   public void run() {
+    File jsFile = args.getJsFile().getAbsoluteFile();
+
     try {
-      Invocable js = JsUtil.compileAndEval(args.getJsFile());
+      Invocable js = JsUtil.compileAndEval(jsFile);
       dnt = js.getInterface(Dnt.class);
     } catch (Exception ex) {
       throw new RuntimeException(ex.getMessage());
@@ -81,7 +83,7 @@ public class DntProcess implements Runnable {
     if (messageFile != null) {
       try {
         System.out.println("Processing uistring file " + messageFile.getPath());
-        createMessageTable(messageFile);
+        createMessageTable(messageFile.getAbsoluteFile());
       } catch (Exception ex) {
         System.err.println(ex.getMessage());
       }
@@ -92,7 +94,7 @@ public class DntProcess implements Runnable {
     for (File file : args.getInputs()) {
       try {
         System.out.println("Processing DNT file " + file.getPath());
-        createTables(file);
+        createTables(file.getAbsoluteFile());
       } catch (Exception ex) {
         System.err.println(ex.getMessage());
       }

@@ -7,6 +7,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Stream;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
@@ -31,12 +32,16 @@ public class DdsConverter implements Runnable {
     Stream<File> stream = args.isForce() ? files.parallelStream() : files.stream();
     File outputDir = args.getOutput();
 
-    if (outputDir != null && !outputDir.exists() && !outputDir.mkdirs()) {
+    Objects.requireNonNull(outputDir, "Output directory cannot be null");
+
+    if (!outputDir.exists() && !outputDir.getAbsoluteFile().mkdirs()) {
       throw new RuntimeException("Could not create " + outputDir.getPath());
     }
 
     stream.forEach(file -> {
       ImageReader imageReader = ImageIO.getImageReadersBySuffix("dds").next();
+      file = file.getAbsoluteFile();
+
       try {
         FileImageInputStream imageInputStream = new FileImageInputStream(file);
         String newFormat = args.getFormat().name();

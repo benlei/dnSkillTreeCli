@@ -43,9 +43,9 @@ public class PakCompress implements Runnable {
 
   @Override
   public void run() {
-    File input = args.getInput();
+    File input = args.getInput().getAbsoluteFile();
 
-    setWriter(args.getOutput());
+    setWriter(args.getOutput().getAbsoluteFile());
 
     if (!input.isDirectory()) {
       throw new RuntimeException(String.format("%s is not a directory", input.getPath()));
