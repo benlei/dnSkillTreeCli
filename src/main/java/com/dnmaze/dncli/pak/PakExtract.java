@@ -28,14 +28,13 @@ public class PakExtract implements Runnable {
 
   @Override
   public void run() {
+    outputDir = args.getOutput();
+    Objects.requireNonNull(outputDir, "Output directory cannot be null");
+    outputDir = outputDir.getAbsoluteFile();
+
     List<File> files = args.getFiles();
     File filterFile = args.getFilterFile();
     PakFilter filter = new PakFilterImpl();
-    outputDir = args.getOutput();
-
-    Objects.requireNonNull(outputDir, "Output directory cannot be null");
-
-    outputDir = outputDir.getAbsoluteFile();
 
     if (filterFile != null) {
       filterFile = filterFile.getAbsoluteFile();

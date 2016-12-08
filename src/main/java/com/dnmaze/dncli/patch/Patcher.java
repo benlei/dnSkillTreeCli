@@ -35,13 +35,12 @@ public class Patcher implements Runnable {
   @Override
   public void run() {
     File outputDir = args.getOutput();
+    Objects.requireNonNull(outputDir, "Output directory cannot be null");
+    outputDir = outputDir.getAbsoluteFile();
+
     int baseVersion = args.getBaseVersion();
     int endVersion = args.getEndVersion();
     int version = baseVersion;
-
-    Objects.requireNonNull(outputDir, "Output directory cannot be null");
-
-    outputDir = outputDir.getAbsoluteFile();
 
     if (endVersion < baseVersion) {
       throw new RuntimeException("the end version must be at least equal to the end version.");
