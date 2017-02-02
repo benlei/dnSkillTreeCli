@@ -39,6 +39,12 @@ public class CommandDds implements Runnable {
   private boolean quiet;
 
   @Getter
+  @Parameter(names = "-favor-dark",
+      description = "Specifically for DN skill trees. Basically highlights the black colors, "
+                    + "removing less black colors from the image.")
+  private boolean favorDark;
+
+  @Getter
   @Parameter(names = "-output",
       description = "Output contents to provided file.",
       converter = FileConverter.class)

@@ -59,6 +59,10 @@ public class DdsConverter implements Runnable {
           output = changeExt(file, prefix + newFormat);
           image = imageReader.read(i);
 
+          if (args.isFavorDark()) {
+            favorDarkColors(image);
+          }
+
           writeImage(image, output);
         }
       } catch (IOException ex) {
@@ -106,6 +110,38 @@ public class DdsConverter implements Runnable {
 
     if (!args.isQuiet()) {
       System.out.println("Created " + output.getPath());
+    }
+  }
+
+  private void favorDarkColors(BufferedImage image) {
+    for (int x = 0; x < image.getWidth(); x++) {
+      for (int y = 0; y < image.getHeight(); y++) {
+        int pixel = image.getRGB(x, y);
+        int alpha = (pixel >> 24) & 0xff;
+        int red = (pixel >> 16) & 0xff;
+        int green = (pixel >> 8) & 0xff;
+        int blue = pixel & 0xff;
+
+        if (red < 200 && green < 200 && blue < 200) {
+          red = 0;
+          blue = 0;
+          green = 0;
+        } else {
+          red = 255;
+          green = 255;
+          blue = 255;
+        }
+
+        if (alpha < 220) {
+          alpha = 0;
+        } else {
+          alpha = 192;
+        }
+
+        pixel = (alpha << 24) | (red << 16) | (green << 8) | blue;
+
+        image.setRGB(x, y, pixel);
+      }
     }
   }
 }
