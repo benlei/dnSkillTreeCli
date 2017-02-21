@@ -32,7 +32,7 @@ public class JsUtil {
     NashornScriptEngineFactory scriptEngineFactory = new NashornScriptEngineFactory();
     ScriptEngine scriptEngine =
         scriptEngineFactory.getScriptEngine("-Ddncli.cwd=" + scriptDir.getAbsolutePath(),
-            "-scripting");
+            "-scripting", "--language=es6");
 
     FileInputStream fis = new FileInputStream(script);
     InputStreamReader isr = new InputStreamReader(fis, StandardCharsets.UTF_8);
