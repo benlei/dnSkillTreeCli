@@ -43,6 +43,8 @@ dependencies {
 
     compile fileTree(dir: 'libs', include: '*.jar')
 
+    // https://mvnrepository.com/artifact/net.sf.jopt-simple/jopt-simple
+    compile group: 'net.sf.jopt-simple', name: 'jopt-simple', version: '5.0.3'
     compile group: 'com.beust', name: 'jcommander', version: '1.48'
     compile group: 'com.google.code.findbugs', name: 'findbugs', version: '3.0.1'
     compile group: 'com.h2database', name: 'h2', version: '1.4.192'

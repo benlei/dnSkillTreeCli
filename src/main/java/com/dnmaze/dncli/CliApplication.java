@@ -3,7 +3,13 @@ package com.dnmaze.dncli;
 import com.dnmaze.dncli.command.Command;
 import com.dnmaze.dncli.command.CommandDds;
 import com.dnmaze.dncli.command.CommandDnt;
+import com.dnmaze.dncli.command.CommandDnt.Execute;
+import com.dnmaze.dncli.command.CommandDnt.Process;
 import com.dnmaze.dncli.command.CommandPak;
+import com.dnmaze.dncli.command.CommandPak.Compress;
+import com.dnmaze.dncli.command.CommandPak.Detail;
+import com.dnmaze.dncli.command.CommandPak.Extract;
+import com.dnmaze.dncli.command.CommandPak.Inflate;
 import com.dnmaze.dncli.command.CommandPatch;
 import com.dnmaze.dncli.exception.InvalidDdsOutputFormatException;
 
@@ -78,23 +84,51 @@ public class CliApplication {
       switch (parsedCommand) {
         case "pak":
           String pakCommand = pakJc.getParsedCommand();
-          if (pakCommand == null) {
-            jc.usage();
+          if (pakCommand == null || pak.isHelp()) {
+            jc.usage("pak");
             System.exit(1);
           }
 
           switch (pakCommand) {
             case "-compress":
-              pak.getCompress().run();
+              Compress compress = pak.getCompress();
+
+              if (compress.isHelp()) {
+                pakJc.usage("-compress");
+                System.exit(1);
+              }
+
+              compress.run();
               break;
             case "-extract":
-              pak.getExtract().run();
+              Extract extract = pak.getExtract();
+
+              if (extract.isHelp()) {
+                pakJc.usage("-extract");
+                System.exit(1);
+              }
+
+              extract.run();
               break;
             case "-inflate":
-              pak.getInflate().run();
+              Inflate inflate = pak.getInflate();
+
+              if (inflate.isHelp()) {
+                pakJc.usage("-inflate");
+                System.exit(1);
+              }
+
+              inflate.run();
               break;
             case "-list":
-              pak.getDetail().run();
+              Detail detail = pak.getDetail();
+
+              if (detail.isHelp()) {
+                pakJc.usage("-detail");
+                System.exit(1);
+              }
+
+              detail.run();
               break;
             default:
               throw new UnsupportedOperationException("Unknown pak command: '"
@@ -104,17 +138,31 @@ public class CliApplication {
           break;
         case "dnt":
           String dntCommand = dntJc.getParsedCommand();
-          if (dntCommand == null) {
-            jc.usage();
+          if (dntCommand == null || dnt.isHelp()) {
+            jc.usage("dds");
             System.exit(1);
           }
 
           switch (dntCommand) {
             case "-process":
+              Process process = dnt.getProcess();
+
+              if (process.isHelp()) {
+                dntJc.usage("-process");
+                System.exit(1);
+              }
+
               dnt.getProcess().run();
               break;
             case "-execute":
-              dnt.getExecute().run();
+              Execute execute = dnt.getExecute();
+
+              if (execute.isHelp()) {
+                dntJc.usage("-execute");
+                System.exit(1);
+              }
+
+              execute.run();
               break;
             default:
               throw new UnsupportedOperationException("Unknown dnt command: '"
@@ -123,9 +171,19 @@ public class CliApplication {
 
           break;
         case "dds":
+          if (dds.isHelp()) {
+            jc.usage("dds");
+            System.exit(1);
+          }
+
           dds.run();
           break;
         case "patch":
+          if (patch.isHelp()) {
+            jc.usage("patch");
+            System.exit(1);
+          }
+
           patch.run();
           break;
 

@@ -22,6 +22,10 @@ public class CommandDnt {
   @Getter
   private final Execute execute = new Execute();
 
+  @Parameter(names = "-help", description = "Displays this usage.", help = true)
+  @Getter
+  private boolean help;
+
   @Parameters
   public static class Process implements Runnable {
     private final Runnable runner = new DntProcess(this);
@@ -60,6 +64,10 @@ public class CommandDnt {
     @Parameter(description = "dntFiles...", required = true)
     private List<File> inputs;
 
+    @Parameter(names = "-help", description = "Displays this usage.", help = true)
+    @Getter
+    private boolean help;
+
     @Override
     public void run() {
       runner.run();
@@ -77,6 +85,10 @@ public class CommandDnt {
         required = true
     )
     private List<File> inputs;
+
+    @Parameter(names = "-help", description = "Displays this usage.", help = true)
+    @Getter
+    private boolean help;
 
     @Override
     public void run() {

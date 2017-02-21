@@ -64,6 +64,10 @@ public class CommandPatch implements Runnable {
       required = true)
   private URL url;
 
+  @Parameter(names = "-help", description = "Displays this usage.", help = true)
+  @Getter
+  private boolean help;
+
   @Override
   public void run() {
     runner.run();

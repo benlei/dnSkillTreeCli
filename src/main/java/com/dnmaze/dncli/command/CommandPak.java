@@ -34,6 +34,10 @@ public class CommandPak {
   @Getter
   private final Inflate inflate = new Inflate();
 
+  @Parameter(names = "-help", description = "Displays this usage.", help = true)
+  @Getter
+  private boolean help;
+
   @Parameters(commandDescription = "Compresses a directory into a pak file.")
   public static class Compress implements Runnable {
     private final Runnable runner = new PakCompress(this);
@@ -60,6 +64,10 @@ public class CommandPak {
         converter = ByteCharacterConverter.class,
         description = "Sets the min. size a compressed pak can be.")
     private Long min = 0L;
+
+    @Parameter(names = "-help", description = "Displays this usage.", help = true)
+    @Getter
+    private boolean help;
 
     @Override
     public void run() {
@@ -96,6 +104,10 @@ public class CommandPak {
     @Parameter(names = "-quiet", description = "Quiet output")
     private boolean quiet;
 
+    @Parameter(names = "-help", description = "Displays this usage.", help = true)
+    @Getter
+    private boolean help;
+
     @Override
     public void run() {
       runner.run();
@@ -113,6 +125,10 @@ public class CommandPak {
     @Getter
     @Parameter(description = "pakFiles...")
     private List<File> files = new ArrayList<>();
+
+    @Parameter(names = "-help", description = "Displays this usage.", help = true)
+    @Getter
+    private boolean help;
 
     @Override
     public void run() {
@@ -135,6 +151,10 @@ public class CommandPak {
     @Getter
     @Parameter(description = "pakFiles...", required = true)
     private List<File> files = new ArrayList<>();
+
+    @Parameter(names = "-help", description = "Displays this usage.", help = true)
+    @Getter
+    private boolean help;
 
     @Override
     public void run() {

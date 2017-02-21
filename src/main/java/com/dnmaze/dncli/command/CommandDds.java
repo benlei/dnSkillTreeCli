@@ -54,6 +54,10 @@ public class CommandDds implements Runnable {
   @Parameter(description = "ddsFiles...", converter = FileConverter.class)
   private List<File> files = new ArrayList<>();
 
+  @Parameter(names = "-help", description = "Displays this usage.", help = true)
+  @Getter
+  private boolean help;
+
   @Override
   public void run() {
     runner.run();
