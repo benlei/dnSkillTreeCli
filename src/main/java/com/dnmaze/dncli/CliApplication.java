@@ -139,7 +139,7 @@ public class CliApplication {
         case "dnt":
           String dntCommand = dntJc.getParsedCommand();
           if (dntCommand == null || dnt.isHelp()) {
-            jc.usage("dds");
+            jc.usage("dnt");
             System.exit(1);
           }
 
