@@ -42,18 +42,18 @@ public class CliApplication {
     JCommander pakJc = addCommand(jc, "pak", pak);
 
     // pak subcommand setup
-    pakJc.addCommand("-compress", pak.getCompress());
-    pakJc.addCommand("-extract", pak.getExtract());
-    pakJc.addCommand("-inflate", pak.getInflate());
-    pakJc.addCommand("-list", pak.getDetail());
+    pakJc.addCommand("compress", pak.getCompress());
+    pakJc.addCommand("extract", pak.getExtract());
+    pakJc.addCommand("inflate", pak.getInflate());
+    pakJc.addCommand("list", pak.getDetail());
 
     // dnt command setup
     CommandDnt dnt = command.getDnt();
     JCommander dntJc = addCommand(jc, "dnt", dnt);
 
     //dnt subcommand setup
-    dntJc.addCommand("-process", dnt.getProcess());
-    dntJc.addCommand("-execute", dnt.getExecute());
+    dntJc.addCommand("process", dnt.getProcess());
+    dntJc.addCommand("execute", dnt.getExecute());
 
     // dds command setup
     CommandDds dds = command.getDds();
@@ -90,41 +90,41 @@ public class CliApplication {
           }
 
           switch (pakCommand) {
-            case "-compress":
+            case "compress":
               Compress compress = pak.getCompress();
 
               if (compress.isHelp()) {
-                pakJc.usage("-compress");
+                pakJc.usage("compress");
                 System.exit(1);
               }
 
               compress.run();
               break;
-            case "-extract":
+            case "extract":
               Extract extract = pak.getExtract();
 
               if (extract.isHelp()) {
-                pakJc.usage("-extract");
+                pakJc.usage("extract");
                 System.exit(1);
               }
 
               extract.run();
               break;
-            case "-inflate":
+            case "inflate":
               Inflate inflate = pak.getInflate();
 
               if (inflate.isHelp()) {
-                pakJc.usage("-inflate");
+                pakJc.usage("inflate");
                 System.exit(1);
               }
 
               inflate.run();
               break;
-            case "-list":
+            case "list":
               Detail detail = pak.getDetail();
 
               if (detail.isHelp()) {
-                pakJc.usage("-detail");
+                pakJc.usage("list");
                 System.exit(1);
               }
 
@@ -144,21 +144,21 @@ public class CliApplication {
           }
 
           switch (dntCommand) {
-            case "-process":
+            case "process":
               Process process = dnt.getProcess();
 
               if (process.isHelp()) {
-                dntJc.usage("-process");
+                dntJc.usage("process");
                 System.exit(1);
               }
 
               dnt.getProcess().run();
               break;
-            case "-execute":
+            case "execute":
               Execute execute = dnt.getExecute();
 
               if (execute.isHelp()) {
-                dntJc.usage("-execute");
+                dntJc.usage("execute");
                 System.exit(1);
               }
 
