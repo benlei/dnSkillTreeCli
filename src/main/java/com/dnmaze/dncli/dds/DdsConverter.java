@@ -11,6 +11,7 @@ import java.awt.image.ColorModel;
 import java.awt.image.WritableRaster;
 import java.io.File;
 import java.io.IOException;
+import java.nio.Buffer;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Stream;
@@ -170,9 +171,7 @@ public class DdsConverter implements Runnable {
         null);
 
     // GRAYSCALE IMAGE
-    BufferedImage grayImage = new BufferedImage(width, height, type);
-    ColorConvertOp op = new ColorConvertOp(ColorSpace.getInstance(ColorSpace.CS_GRAY), null);
-    op.filter(image, grayImage);
+    BufferedImage grayImage = grayscaleImage(image);
 
     newGraphics.drawImage(grayImage,
         0, spriteSize * 2, spriteSize, spriteSize * 3,
@@ -181,13 +180,6 @@ public class DdsConverter implements Runnable {
 
 
     // CRESTED IMAGE
-//    BufferedImage crestedImage = new BufferedImage(width, height, type);
-//    Graphics crestedGraphics = crestedImage.getGraphics();
-//    Color newColor = new Color(251, 178, 0, 0 /* alpha needs to be zero */);
-//    crestedGraphics.setXORMode(newColor);
-//    crestedGraphics.drawImage(image, 0, 0, null);
-//    crestedGraphics.dispose();
-
     BufferedImage crestedImage = tintImage(image, 224, 157, 0);
 
     newGraphics.drawImage(crestedImage,
@@ -200,11 +192,24 @@ public class DdsConverter implements Runnable {
     return newImage;
   }
 
+  private BufferedImage grayscaleImage(BufferedImage image) {
+    BufferedImage grayImage = new BufferedImage(
+        image.getWidth(),
+        image.getHeight(),
+        image.getType()
+    );
+
+    ColorConvertOp op = new ColorConvertOp(ColorSpace.getInstance(ColorSpace.CS_GRAY), null);
+    op.filter(image, grayImage);
+
+    return grayImage;
+  }
+
   private BufferedImage tintImage(BufferedImage image, int red, int green, int blue) {
     BufferedImage tintedSprite = new BufferedImage(
         image.getWidth(),
         image.getHeight(),
-        image.getTransparency()
+        image.getType()
     );
 
     Graphics graphics = tintedSprite.getGraphics();
