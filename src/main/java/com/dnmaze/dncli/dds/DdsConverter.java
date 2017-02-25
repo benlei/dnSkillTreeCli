@@ -3,7 +3,7 @@ package com.dnmaze.dncli.dds;
 import com.dnmaze.dncli.command.CommandDds;
 import com.dnmaze.dncli.util.OsUtil;
 
-import java.awt.*;
+import java.awt.Graphics;
 import java.awt.color.ColorSpace;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorConvertOp;
@@ -11,7 +11,6 @@ import java.awt.image.ColorModel;
 import java.awt.image.WritableRaster;
 import java.io.File;
 import java.io.IOException;
-import java.nio.Buffer;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Stream;
@@ -156,25 +155,23 @@ public class DdsConverter implements Runnable {
   }
 
   private BufferedImage addDifferentBorderColors(BufferedImage image) {
-    int height = image.getHeight();
-    int width = image.getWidth();
     int spriteSize = 52;
     int type = image.getType();
 
-    BufferedImage newImage = new BufferedImage(spriteSize, spriteSize * 4, type);
+    BufferedImage newImage = new BufferedImage(spriteSize, spriteSize * 3, type);
     Graphics newGraphics = newImage.getGraphics();
 
     // ORIGINAL IMAGE
     newGraphics.drawImage(image,
-        0, 0, spriteSize, spriteSize * 2,
-        spriteSize * 3, 0, spriteSize * 4, spriteSize * 2,
+        0, 0, spriteSize, spriteSize,
+        spriteSize * 3, 0, spriteSize * 4, spriteSize,
         null);
 
     // GRAYSCALE IMAGE
     BufferedImage grayImage = grayscaleImage(image);
 
     newGraphics.drawImage(grayImage,
-        0, spriteSize * 2, spriteSize, spriteSize * 3,
+        0, spriteSize, spriteSize, spriteSize * 2,
         spriteSize * 3, 0, spriteSize * 4, spriteSize,
         null);
 
@@ -183,7 +180,7 @@ public class DdsConverter implements Runnable {
     BufferedImage crestedImage = tintImage(image, 224, 157, 0);
 
     newGraphics.drawImage(crestedImage,
-        0, spriteSize * 3, spriteSize, spriteSize * 4,
+        0, spriteSize * 2, spriteSize, spriteSize * 3,
         spriteSize * 3, 0, spriteSize * 4, spriteSize,
         null);
 
@@ -228,7 +225,6 @@ public class DdsConverter implements Runnable {
         ColorModel colorModel = tintedSprite.getColorModel();
         WritableRaster raster = tintedSprite.getRaster();
 
-        int alpha = colorModel.getAlpha(raster.getDataElements(x, y, null));
         int newRed = colorModel.getRed(raster.getDataElements(x, y, null));
         int newGreen = colorModel.getGreen(raster.getDataElements(x, y, null));
         int newBlue = colorModel.getBlue(raster.getDataElements(x, y, null));
@@ -236,6 +232,8 @@ public class DdsConverter implements Runnable {
         newRed *= redPercent;
         newGreen *= greenPercent;
         newBlue *= bluePercent;
+
+        int alpha = colorModel.getAlpha(raster.getDataElements(x, y, null));
 
         tintedSprite.setRGB(x, y, (alpha << 24) | (newRed << 16) | (newGreen << 8) | newBlue);
       }
