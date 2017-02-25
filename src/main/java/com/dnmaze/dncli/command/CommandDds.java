@@ -45,6 +45,12 @@ public class CommandDds implements Runnable {
   private boolean favorDark;
 
   @Getter
+  @Parameter(names = "-border",
+      description = "Specifically for DN skill image borders. Basically makes multiple colored "
+                    + "versions of the border in the same image.")
+  private boolean border;
+
+  @Getter
   @Parameter(names = "-output",
       description = "Output contents to provided file.",
       converter = FileConverter.class)

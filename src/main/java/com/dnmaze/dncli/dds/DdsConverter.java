@@ -3,7 +3,12 @@ package com.dnmaze.dncli.dds;
 import com.dnmaze.dncli.command.CommandDds;
 import com.dnmaze.dncli.util.OsUtil;
 
+import java.awt.*;
+import java.awt.color.ColorSpace;
 import java.awt.image.BufferedImage;
+import java.awt.image.ColorConvertOp;
+import java.awt.image.ColorModel;
+import java.awt.image.WritableRaster;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
@@ -61,6 +66,10 @@ public class DdsConverter implements Runnable {
 
           if (args.isFavorDark()) {
             favorDarkColors(image);
+          }
+
+          if (args.isBorder()) {
+            image = addDifferentBorderColors(image);
           }
 
           writeImage(image, output);
@@ -143,5 +152,89 @@ public class DdsConverter implements Runnable {
         image.setRGB(x, y, pixel);
       }
     }
+  }
+
+  private BufferedImage addDifferentBorderColors(BufferedImage image) {
+    int height = image.getHeight();
+    int width = image.getWidth();
+    int spriteSize = 52;
+    int type = image.getType();
+
+    BufferedImage newImage = new BufferedImage(spriteSize, spriteSize * 4, type);
+    Graphics newGraphics = newImage.getGraphics();
+
+    // ORIGINAL IMAGE
+    newGraphics.drawImage(image,
+        0, 0, spriteSize, spriteSize * 2,
+        spriteSize * 3, 0, spriteSize * 4, spriteSize * 2,
+        null);
+
+    // GRAYSCALE IMAGE
+    BufferedImage grayImage = new BufferedImage(width, height, type);
+    ColorConvertOp op = new ColorConvertOp(ColorSpace.getInstance(ColorSpace.CS_GRAY), null);
+    op.filter(image, grayImage);
+
+    newGraphics.drawImage(grayImage,
+        0, spriteSize * 2, spriteSize, spriteSize * 3,
+        spriteSize * 3, 0, spriteSize * 4, spriteSize,
+        null);
+
+
+    // CRESTED IMAGE
+//    BufferedImage crestedImage = new BufferedImage(width, height, type);
+//    Graphics crestedGraphics = crestedImage.getGraphics();
+//    Color newColor = new Color(251, 178, 0, 0 /* alpha needs to be zero */);
+//    crestedGraphics.setXORMode(newColor);
+//    crestedGraphics.drawImage(image, 0, 0, null);
+//    crestedGraphics.dispose();
+
+    BufferedImage crestedImage = tintImage(image, 224, 157, 0);
+
+    newGraphics.drawImage(crestedImage,
+        0, spriteSize * 3, spriteSize, spriteSize * 4,
+        spriteSize * 3, 0, spriteSize * 4, spriteSize,
+        null);
+
+    newGraphics.dispose();
+
+    return newImage;
+  }
+
+  private BufferedImage tintImage(BufferedImage image, int red, int green, int blue) {
+    BufferedImage tintedSprite = new BufferedImage(
+        image.getWidth(),
+        image.getHeight(),
+        image.getTransparency()
+    );
+
+    Graphics graphics = tintedSprite.getGraphics();
+    graphics.drawImage(image, 0, 0, null);
+    graphics.dispose();
+
+    int width = image.getWidth();
+    int height = image.getHeight();
+
+    float redPercent = red / 255.f;
+    float greenPercent = green / 255.f;
+    float bluePercent = blue / 255.f;
+
+    for (int x = 0; x < width; x++) {
+      for (int y = 0; y < height; y++) {
+        ColorModel colorModel = tintedSprite.getColorModel();
+        WritableRaster raster = tintedSprite.getRaster();
+
+        int alpha = colorModel.getAlpha(raster.getDataElements(x, y, null));
+        int newRed = colorModel.getRed(raster.getDataElements(x, y, null));
+        int newGreen = colorModel.getGreen(raster.getDataElements(x, y, null));
+        int newBlue = colorModel.getBlue(raster.getDataElements(x, y, null));
+
+        newRed *= redPercent;
+        newGreen *= greenPercent;
+        newBlue *= bluePercent;
+
+        tintedSprite.setRGB(x, y, (alpha << 24) | (newRed << 16) | (newGreen << 8) | newBlue);
+      }
+    }
+    return tintedSprite;
   }
 }
