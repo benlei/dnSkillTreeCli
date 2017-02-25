@@ -177,7 +177,7 @@ public class DdsConverter implements Runnable {
 
 
     // CRESTED IMAGE
-    BufferedImage crestedImage = tintImage(image, 224, 157, 0);
+    BufferedImage crestedImage = tintImage(image, 255, 207, 140);
 
     newGraphics.drawImage(crestedImage,
         0, spriteSize * 2, spriteSize, spriteSize * 3,
