@@ -22,7 +22,7 @@ public class DntExecute implements Runnable {
       File script = args.getInputs().get(0).getAbsoluteFile();
       File scriptDir = script.getParentFile();
       String configFile = args.getConfigFile() == null
-          ? args.getConfigFile().getAbsolutePath() : ".";
+          ? "." : args.getConfigFile().getAbsolutePath();
 
       Invocable js = JsUtil.compileAndEval(script,
           "-Ddncli.cwd=" + scriptDir.getAbsolutePath(),

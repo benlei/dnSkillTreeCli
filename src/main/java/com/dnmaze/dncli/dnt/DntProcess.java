@@ -65,7 +65,7 @@ public class DntProcess implements Runnable {
       File script = args.getJsFile().getAbsoluteFile();
       File scriptDir = script.getParentFile();
       String configFile = args.getConfigFile() == null
-          ? args.getConfigFile().getAbsolutePath() : ".";
+          ? "." : args.getConfigFile().getAbsolutePath();
 
       Invocable js = JsUtil.compileAndEval(script,
           "-Ddncli.cwd=" + scriptDir.getAbsolutePath(),
@@ -168,9 +168,9 @@ public class DntProcess implements Runnable {
     int nodesLength = nodes.getLength();
 
     for (int i = 0; i < nodesLength; i++) {
-      Element element = (Element)nodes.item(i);
+      Element element = (Element) nodes.item(i);
       int mid = Integer.parseInt(element.getAttribute("mid"));
-      String data = ((CharacterData)element.getFirstChild()).getData();
+      String data = ((CharacterData) element.getFirstChild()).getData();
 
       pstmt.setInt(1, mid);
       pstmt.setString(2, data);
