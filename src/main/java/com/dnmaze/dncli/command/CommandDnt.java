@@ -64,6 +64,15 @@ public class CommandDnt {
     @Parameter(description = "dntFiles...", required = true)
     private List<File> inputs;
 
+    @Getter
+    @Parameter(
+        names = "-config",
+        description = "A config file that will be passed as dncli.config system property.",
+        converter = FileConverter.class
+    )
+    private File configFile;
+
+
     @Parameter(names = "-help", description = "Displays this usage.", help = true)
     @Getter
     private boolean help;
@@ -89,6 +98,15 @@ public class CommandDnt {
     @Parameter(names = "-help", description = "Displays this usage.", help = true)
     @Getter
     private boolean help;
+
+
+    @Getter
+    @Parameter(
+        names = "-config",
+        description = "A config file that will be passed as dncli.config system property.",
+        converter = FileConverter.class
+    )
+    private File configFile;
 
     @Override
     public void run() {

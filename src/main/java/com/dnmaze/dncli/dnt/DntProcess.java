@@ -61,10 +61,17 @@ public class DntProcess implements Runnable {
 
   @Override
   public void run() {
-    File jsFile = args.getJsFile().getAbsoluteFile();
-
     try {
-      Invocable js = JsUtil.compileAndEval(jsFile);
+      File script = args.getJsFile().getAbsoluteFile();
+      File scriptDir = script.getParentFile();
+      String configFile = args.getConfigFile() == null
+          ? args.getConfigFile().getAbsolutePath() : ".";
+
+      Invocable js = JsUtil.compileAndEval(script,
+          "-Ddncli.cwd=" + scriptDir.getAbsolutePath(),
+          "-Ddncli.config=" + configFile
+      );
+
       dnt = js.getInterface(Dnt.class);
     } catch (Exception ex) {
       throw new RuntimeException(ex.getMessage());

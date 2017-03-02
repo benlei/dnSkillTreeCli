@@ -3,6 +3,7 @@ package com.dnmaze.dncli.dnt;
 import com.dnmaze.dncli.command.CommandDnt;
 import com.dnmaze.dncli.util.JsUtil;
 
+import java.io.File;
 import javax.script.Invocable;
 
 /**
@@ -18,7 +19,16 @@ public class DntExecute implements Runnable {
   @Override
   public void run() {
     try {
-      Invocable js = JsUtil.compileAndEval(args.getInputs().get(0).getAbsoluteFile());
+      File script = args.getInputs().get(0).getAbsoluteFile();
+      File scriptDir = script.getParentFile();
+      String configFile = args.getConfigFile() == null
+          ? args.getConfigFile().getAbsolutePath() : ".";
+
+      Invocable js = JsUtil.compileAndEval(script,
+          "-Ddncli.cwd=" + scriptDir.getAbsolutePath(),
+          "-Ddncli.config=" + configFile
+      );
+
       Dnt dnt = js.getInterface(Dnt.class);
       dnt.process();
     } catch (Exception ex) {

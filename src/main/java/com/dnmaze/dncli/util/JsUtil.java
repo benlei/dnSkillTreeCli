@@ -1,6 +1,7 @@
 package com.dnmaze.dncli.util;
 
 import jdk.nashorn.api.scripting.NashornScriptEngineFactory;
+import org.apache.commons.lang.ArrayUtils;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -22,17 +23,17 @@ public class JsUtil {
    * an engine that is common.</p>
    *
    * @param script the javascript file
+   * @param args   args for the script
    * @return the script engine
    * @throws FileNotFoundException if file was not found
    * @throws ScriptException       if cannot eval the javascript file
    */
-  public static Invocable compileAndEval(File script)
+  public static Invocable compileAndEval(File script, String... args)
       throws ScriptException, FileNotFoundException {
-    File scriptDir = script.getParentFile();
     NashornScriptEngineFactory scriptEngineFactory = new NashornScriptEngineFactory();
     ScriptEngine scriptEngine =
-        scriptEngineFactory.getScriptEngine("-Ddncli.cwd=" + scriptDir.getAbsolutePath(),
-            "-scripting", "--language=es6");
+        scriptEngineFactory.getScriptEngine((String[]) ArrayUtils.addAll(args,
+            new String[] {"-scripting", "--language=es6"}));
 
     FileInputStream fis = new FileInputStream(script);
     InputStreamReader isr = new InputStreamReader(fis, StandardCharsets.UTF_8);
