@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 import java.util.zip.DataFormatException;
 import javax.script.Invocable;
 import javax.script.ScriptException;
@@ -57,10 +58,22 @@ public class PakExtract implements Runnable {
    * @param filter the filter function
    */
   private void extractFiles(List<File> files, PakFilter filter) {
-    files.parallelStream().forEach(file -> {
+    Stream<File> stream;
+
+    if (args.isSync()) {
+      stream = files.stream();
+    } else {
+      stream = files.parallelStream();
+    }
+
+    stream.forEach(file -> {
       file = file.getAbsoluteFile();
 
       try {
+        if (args.isSync()) {
+          System.out.println(file.getAbsolutePath() + " will be extracted");
+        }
+
         PakHeader pakHeader = PakHeader.from(file);
         extractPakFiles(file, pakHeader, filter);
       } catch (IOException ex) {
@@ -80,15 +93,8 @@ public class PakExtract implements Runnable {
     int numFiles = header.getNumFiles();
     long startPos = header.getStartPosition();
 
-    IntStream stream = IntStream.range(0, numFiles);
-
-    if (!args.isSync()) {
-      stream = stream.parallel();
-    }
-
-    stream.forEach(frame -> {
+    IntStream.range(0, numFiles).parallel().forEach(frame -> {
       try {
-        System.out.println(file.getAbsolutePath() + " being extracted");
         PakFile pakFile = PakFile.load(file, startPos, frame);
         boolean extractable = filter.filter(pakFile);
 
