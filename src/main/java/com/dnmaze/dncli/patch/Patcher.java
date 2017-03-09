@@ -115,11 +115,11 @@ public class Patcher implements Runnable {
     try (InputStream input = conn.getInputStream()) {
       try (OutputStream output = new FileOutputStream(destination)) {
         int length = conn.getContentLength();
-        byte[] buffer = new byte[length];
+        byte[] buffer = new byte[BUFSIZE];
         int read;
 
-        while (length > 0  && (read = input.read(buffer, 0, length)) != -1) {
-          output.write(buffer, 0, read);
+        while (length > 0  && (read = input.read(buffer)) != -1) {
+          output.write(buffer, 0, Math.min(length, read));
           length -= read;
         }
       }
