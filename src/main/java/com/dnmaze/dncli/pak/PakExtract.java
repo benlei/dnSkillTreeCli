@@ -88,6 +88,7 @@ public class PakExtract implements Runnable {
 
     stream.forEach(frame -> {
       try {
+        System.out.println(file.getAbsolutePath() + " being extracted");
         PakFile pakFile = PakFile.load(file, startPos, frame);
         boolean extractable = filter.filter(pakFile);
 
