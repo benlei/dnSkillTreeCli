@@ -55,6 +55,7 @@ public class Patcher implements Runnable {
       String url = patchUrl.toString();
       File output = new File(outputDir, "Patch" + strVersion + ".pak");
 
+      log("Attempting to download " + patchUrl);
       if (download(patchUrl, output, 0)) {
         log(url + " -> " + output.getPath());
       } else {
