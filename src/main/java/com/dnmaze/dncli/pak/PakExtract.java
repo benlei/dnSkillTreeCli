@@ -80,7 +80,13 @@ public class PakExtract implements Runnable {
     int numFiles = header.getNumFiles();
     long startPos = header.getStartPosition();
 
-    IntStream.range(0, numFiles).parallel().forEach(frame -> {
+    IntStream stream = IntStream.range(0, numFiles);
+
+    if (!args.isSync()) {
+      stream = stream.parallel();
+    }
+
+    stream.forEach(frame -> {
       try {
         PakFile pakFile = PakFile.load(file, startPos, frame);
         boolean extractable = filter.filter(pakFile);

@@ -102,6 +102,10 @@ public class CommandPak {
     private boolean force;
 
     @Getter
+    @Parameter(names = "-sync", description = "Extracts file synchronously (one at a time)")
+    private boolean sync;
+
+    @Getter
     @Parameter(names = "-quiet", description = "Quiet output")
     private boolean quiet;
 
