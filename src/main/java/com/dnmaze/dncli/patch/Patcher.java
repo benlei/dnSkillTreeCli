@@ -138,7 +138,7 @@ public class Patcher implements Runnable {
     }
 
     try (FileOutputStream output = new FileOutputStream(file)) {
-      output.write(("version=" + version).getBytes(StandardCharsets.UTF_8));
+      output.write(("" + version).getBytes(StandardCharsets.UTF_8));
       log("Created version file " + file.getPath());
     }
   }
