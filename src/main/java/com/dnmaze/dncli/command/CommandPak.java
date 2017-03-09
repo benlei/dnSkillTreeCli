@@ -52,7 +52,8 @@ public class CommandPak {
     @Getter
     @Parameter(names = "-output",
         description = "Output contents to provided file.",
-        converter = FileConverter.class)
+        converter = FileConverter.class,
+        required = true)
     private File output;
 
     @Getter
