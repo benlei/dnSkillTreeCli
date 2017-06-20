@@ -3,19 +3,23 @@ package com.dnmaze.dncli.command;
 import com.dnmaze.dncli.dnt.DntExecute;
 import com.dnmaze.dncli.dnt.DntProcess;
 
+import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 import com.beust.jcommander.converters.FileConverter;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import lombok.Getter;
 
 import java.io.File;
 import java.util.List;
+import java.util.function.BiConsumer;
 
 /**
  * Created by blei on 6/16/16.
  */
 @Parameters(commandDescription = "DragonNest Table file querying. Utilizes MySQL syntax.")
-public class CommandDnt {
+@SuppressFBWarnings("DM_EXIT")
+public class CommandDnt implements BiConsumer<JCommander, String> {
   @Getter
   private final Process process = new Process();
 
@@ -111,6 +115,31 @@ public class CommandDnt {
     @Override
     public void run() {
       runner.run();
+    }
+  }
+
+  @Override
+  public void accept(JCommander dntJc, String command) {
+    switch (command) {
+      case "process":
+        if (process.isHelp()) {
+          dntJc.usage("process");
+          System.exit(1);
+        }
+
+        process.run();
+        break;
+      case "execute":
+        if (execute.isHelp()) {
+          dntJc.usage("execute");
+          System.exit(1);
+        }
+
+        execute.run();
+        break;
+      default:
+        throw new UnsupportedOperationException("Unknown dnt command: '"
+                                                + command + "'");
     }
   }
 }
