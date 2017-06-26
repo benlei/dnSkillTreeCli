@@ -3,11 +3,8 @@ package com.dnmaze.dncli.patch;
 import com.dnmaze.dncli.command.CommandPatch;
 import com.dnmaze.dncli.util.OsUtil;
 
-import ch.qos.logback.classic.Level;
-import ch.qos.logback.classic.Logger;
 import lombok.Cleanup;
 import lombok.SneakyThrows;
-import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -22,7 +19,6 @@ import java.util.Objects;
 /**
  * Created by blei on 11/2/16.
  */
-@Slf4j
 public class Patcher implements Runnable {
   private static final int BUFSIZE = 8192;
   private static final int MAX_REDIRECTS =
@@ -38,11 +34,6 @@ public class Patcher implements Runnable {
   @SneakyThrows
   @Override
   public void run() {
-    // show debugs
-    if (args.isQuiet()) {
-      ((Logger)log).setLevel(Level.DEBUG);
-    }
-
     File outputDir = args.getOutput();
     Objects.requireNonNull(outputDir, "Output directory cannot be null");
     outputDir = outputDir.getAbsoluteFile();
@@ -64,9 +55,9 @@ public class Patcher implements Runnable {
       String url = patchUrl.toString();
       File output = new File(outputDir, "Patch" + strVersion + ".pak");
 
-      log.info("Attempting to download " + patchUrl);
+      log("Attempting to download " + patchUrl);
       if (download(patchUrl, output, 0)) {
-        log.info(url + " -> " + output.getPath());
+        log(url + " -> " + output.getPath());
       } else {
         break;
       }
@@ -76,16 +67,16 @@ public class Patcher implements Runnable {
 
     int diff = version - baseVersion;
     if (diff != 0) {
-      log.info("");
+      log("");
     }
 
-    log.info("Downloaded " + diff + " patch(es).");
-    log.info("Ended at version " + version);
+    log("Downloaded " + diff + " patch(es).");
+    log("Ended at version " + version);
 
     File versionFile = args.getVersionFile();
 
     if (versionFile != null) {
-      log.info("");
+      log("");
       createVersionFile(versionFile.getAbsoluteFile(), version);
     }
   }
@@ -151,11 +142,17 @@ public class Patcher implements Runnable {
 
     try (FileOutputStream output = new FileOutputStream(file)) {
       output.write(("" + version).getBytes(StandardCharsets.UTF_8));
-      log.info("Created version file " + file.getPath());
+      log("Created version file " + file.getPath());
     }
   }
 
   private String getPatchString(int version) {
     return ("" + (100000000 + version)).substring(1);
+  }
+
+  private void log(String message) {
+    if (!args.isQuiet()) {
+      System.out.println(message);
+    }
   }
 }

@@ -6,11 +6,9 @@ import com.dnmaze.dncli.pak.PakDetail;
 import com.dnmaze.dncli.pak.PakExtract;
 import com.dnmaze.dncli.pak.PakInflate;
 
-import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 import com.beust.jcommander.converters.FileConverter;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -18,15 +16,12 @@ import java.io.File;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 
 /**
  * Created by blei on 6/16/16.
  */
-@SuppressFBWarnings("DM_EXIT")
 @Parameters(commandDescription = "DragonNest pak file extraction and compression.")
-public class CommandPak implements BiConsumer<JCommander, String> {
+public class CommandPak {
   @Getter
   private final Compress compress = new Compress();
 
@@ -169,47 +164,6 @@ public class CommandPak implements BiConsumer<JCommander, String> {
     @Override
     public void run() {
       runner.run();
-    }
-  }
-
-  @Override
-  public void accept(JCommander pakJc, String command) {
-    switch (command) {
-      case "compress":
-        if (compress.isHelp()) {
-          pakJc.usage("compress");
-          System.exit(1);
-        }
-
-        compress.run();
-        break;
-      case "extract":
-        if (extract.isHelp()) {
-          pakJc.usage("extract");
-          System.exit(1);
-        }
-
-        extract.run();
-        break;
-      case "inflate":
-        if (inflate.isHelp()) {
-          pakJc.usage("inflate");
-          System.exit(1);
-        }
-
-        inflate.run();
-        break;
-      case "list":
-        if (detail.isHelp()) {
-          pakJc.usage("list");
-          System.exit(1);
-        }
-
-        detail.run();
-        break;
-      default:
-        throw new UnsupportedOperationException("Unknown pak command: '"
-                                                + command + "'");
     }
   }
 }
